@@ -10,36 +10,95 @@
 
     <!-- Local Custom Font -->
     <style>
+
+        body {
+            text-align: center;
+            width: 210mm; /* A4 width */
+            height: 297mm; /* A4 height */
+            margin: auto;
+            padding: 50px;
+            box-sizing: border-box;
+        }
+
         @font-face {
-            font-family: 'EBGaramond';
-            src: url('fonts/EBGARAMOND-INITIALSF1.OTF') format('otf'),
-                 url('fonts/EBGARAMOND-INITIALSF1.OTF') format('otf');
+            font-family: 'EBGaramond', serif;
+            src: url('fonts/EBGaramond/EBGaramond-Initials.otf') format('opentype'),
+                 url('fonts/EBGaramond/EBGaramond-Bold.ttf') format('truetype'),
+                 url('fonts/EBGaramond/EBGaramond-Italic-VariableFont_wght.ttf') format('truetype'),
+                 url('fonts/EBGaramond/EBGaramond-SemiBold.ttf') format('truetype'),
+                 url('fonts/EBGaramond/EBGaramond-Medium.ttf') format('truetype'),
+                 url('fonts/EBGaramond/EBGaramond-VariableFont_wght.ttf') format('truetype'),
+                 url('fonts/EBGaramond/EBGaramond-ExtraBold.ttf') format('truetype');
+            font-weight: normal; /* default */
+            font-style: normal;  /* default */
+        }
+
+        @font-face {
+            font-family: 'EBGaramond-Italic', serif;
+            src: url('fonts/EBGaramond/EBGaramond-Italic-VariableFont_wght.ttf') format('truetype');
+            font-weight: normal; /* default */
+            font-style: normal;  /* default */
+        }
+
+        @font-face {
+            font-family: 'Chomsky';
+            src: url('fonts/Chomsky/Chomsky.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
         }
 
         /* Styling paragraphs with different fonts and sizes */
-        .roboto {
-            font-family: 'Roboto', sans-serif;
-            font-size: 20px;
+        .chomskycanon {
+            font-family: 'Chomsky';
+            font-size: 48px;
         }
 
-        .custom {
-            font-family: 'CustomFont', serif;
-            font-size: 18px;
+        .ebgaramond {
+            font-family: 'EBGaramond', serif;
+            font-size: normal; /* Set default font size */
+        }
+
+        .size-small {
+            font-size: 14px; /* Smaller size */
+        }
+
+        .size28 {
+            font-size: 28px; /* Default size */
+        }
+
+        .size26 {
+            font-size: 26px; /* Larger size */
+        }
+
+        .size22 {
+            font-size: 22px; /* Larger size */
+        }
+
+        .ebgaramond-bold {
+            font-family: 'EBGaramond', serif;
+            font-weight: bold; /* Bold style */
+            font-size: 18px; 
+        }
+
+        .ebgaramond-italic {
+            font-family: 'EBGaramond-Italic', serif;
+            font-weight: normal;
+            font-size: normal;
         }
     </style>
 </head>
 <body>
 
-    <p class="roboto">
-        This paragraph uses the Roboto font from Google Fonts.
-    </p>
 
-    <p class="custom">
-        This paragraph uses a custom font hosted locally in the project.
-    </p>
+    <p class="chomskycanon">A Comprehensive Exploration and Insightful Observations</p><br/>
+    <p class="ebgaramond size22">ON THE</p><br/>
+    <p class="ebgaramond-italic size28">AGRICULTURAL PRACTICES AND THE CULINARY TRADITIONS</p><br/>
+    <p class="ebgaramond size22">IN THE</p><br/>
+    <p class="ebgaramond-bold size28">AUTOKRATORIA OF SIRRADRA</p><br/>
+    <p class="ebgaramond size26">OR</p><br/>
+    <p class="ebgaramond-italic size28">THE BOOK OF SIRRADRAN AGRICULTURE AND CUISINE</p><br/><br/>
+    <p class="ebgaramond size22">D<sup>R.</sup> H. H. LEE</p>
+    <p class="ebgaramond size22">MINISTRY OF CULTURE <br/>AUTOKRATORIA OF SIRRADRA <br/> T. E. 303</p>
 
 </body>
 </html>
-
