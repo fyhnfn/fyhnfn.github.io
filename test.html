@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Victorian Title with Diamonds</title>
+    <title>Victorian Title Page</title>
     <style>
         body {
             font-family: 'Times New Roman', serif;
             text-align: center;
-            width: 210mm;
-            height: 297mm;
+            width: 210mm; /* A4 width */
+            height: 297mm; /* A4 height */
             margin: auto;
             padding: 50px;
             box-sizing: border-box;
@@ -43,11 +43,11 @@
             margin-top: 10px;
         }
 
-        /* Line with Diamond */
+        /* Line with Diamonds */
         .line-with-diamonds {
             position: relative;
             display: inline-block;
-            width: 300px;
+            width: 300px; /* Adjust width as needed */
             height: 2px;
             background-color: black;
             margin: 20px 0;
@@ -58,25 +58,26 @@
             content: '';
             position: absolute;
             top: -8px; /* Adjust to vertically align diamonds */
-            width: 10px;
-            height: 10px;
+            width: 8px; /* Adjust width for smaller diamonds */
+            height: 8px; /* Adjust height for smaller diamonds */
             background-color: black;
             transform: rotate(45deg); /* Turn square into diamond */
         }
 
         .line-with-diamonds::before {
-            left: 30px; /* Position small left diamond */
+            left: 20px; /* Position left diamond */
         }
 
         .line-with-diamonds::after {
-            right: 30px; /* Position small right diamond */
+            right: 20px; /* Position right diamond */
         }
 
         .diamond-center {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            background-color: black;
+            width: 20px; /* Adjust width for center diamond */
+            height: 20px; /* Adjust height for center diamond */
+            background-color: transparent; /* No fill for center diamond */
+            border: 2px solid black; /* Outline for center diamond */
             transform: rotate(45deg); /* Larger center diamond */
             position: relative;
             top: -12px;
@@ -85,21 +86,7 @@
 </head>
 <body>
 
-    <h1>Comprehensive Exploration and Insightful Observations</h1>
-    <div class="line-with-diamonds">
-        <span class="diamond-center"></span> <!-- Center diamond -->
-    </div>
-
-    <h2>on the</h2>
-
-    <h1>Agricultural Practices and the Culinary Traditions</h1>
-    <div class="line-with-diamonds">
-        <span class="diamond-center"></span> <!-- Center diamond -->
-    </div>
-
-    <h2>in the</h2>
-
-    <h1>Autokratoria of Sirradra</h1>
+    <h1>Sirradran Culinary Traditions</h1>
     <div class="line-with-diamonds">
         <span class="diamond-center"></span> <!-- Center diamond -->
     </div>
