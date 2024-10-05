@@ -57,30 +57,29 @@
         .line-with-diamonds::after {
             content: '';
             position: absolute;
-            top: -8px; /* Adjust to vertically align diamonds */
-            width: 8px; /* Adjust width for smaller diamonds */
-            height: 8px; /* Adjust height for smaller diamonds */
+            top: -10px; /* Adjust to vertically align diamonds */
+            width: 12px; /* Adjust width for smaller diamonds */
+            height: 12px; /* Adjust height for smaller diamonds */
             background-color: black;
             transform: rotate(45deg); /* Turn square into diamond */
         }
 
         .line-with-diamonds::before {
-            left: 20px; /* Position left diamond */
+            left: 15px; /* Position left diamond to touch the center */
         }
 
         .line-with-diamonds::after {
-            right: 20px; /* Position right diamond */
+            right: 15px; /* Position right diamond to touch the center */
         }
 
         .diamond-center {
             display: inline-block;
             width: 20px; /* Adjust width for center diamond */
             height: 20px; /* Adjust height for center diamond */
-            background-color: transparent; /* No fill for center diamond */
-            border: 2px solid black; /* Outline for center diamond */
-            transform: rotate(45deg); /* Larger center diamond */
+            background-color: white; /* White fill for center diamond */
             position: relative;
-            top: -12px;
+            top: -8px; /* Adjust to align with the line */
+            transform: rotate(45deg); /* Center diamond rotated */
         }
     </style>
 </head>
