@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Example</title>
+
+    <!-- Google Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+
+    <!-- Local Custom Font -->
+    <style>
+        @font-face {
+            font-family: 'EBGaramond';
+            src: url('fonts/EBGARAMOND-INITIALSF1.OTF') format('otf'),
+                 url('fonts/EBGARAMOND-INITIALSF1.OTF') format('otf');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Styling paragraphs with different fonts and sizes */
+        .roboto {
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+        }
+
+        .custom {
+            font-family: 'CustomFont', serif;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <p class="roboto">
+        This paragraph uses the Roboto font from Google Fonts.
+    </p>
+
+    <p class="custom">
+        This paragraph uses a custom font hosted locally in the project.
+    </p>
+
+</body>
+</html>
+
