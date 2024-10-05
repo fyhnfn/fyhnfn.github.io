@@ -46,11 +46,18 @@
         /* Line with Diamonds */
         .line-with-diamonds {
             position: relative;
-            display: inline-block;
-            width: 300px; /* Adjust width as needed */
-            height: 2px;
-            background-color: black;
+            display: flex; /* Use flexbox for centering */
+            align-items: center; /* Align items vertically */
+            justify-content: center; /* Center items horizontally */
+            width: 100%; /* Full width */
             margin: 20px 0;
+        }
+
+        .line {
+            height: 2px; /* Line thickness */
+            background-color: black;
+            flex-grow: 1; /* Allow line to grow */
+            margin: 0 20px; /* Space between diamonds and line */
         }
 
         .line-with-diamonds::before,
@@ -58,25 +65,26 @@
             content: '';
             position: absolute;
             top: -10px; /* Adjust to vertically align diamonds */
-            width: 12px; /* Adjust width for smaller diamonds */
-            height: 12px; /* Adjust height for smaller diamonds */
+            width: 12px; /* Width for smaller diamonds */
+            height: 12px; /* Height for smaller diamonds */
             background-color: black;
             transform: rotate(45deg); /* Turn square into diamond */
         }
 
         .line-with-diamonds::before {
-            left: 15px; /* Position left diamond to touch the center */
+            left: calc(50% - 32px); /* Position left diamond */
         }
 
         .line-with-diamonds::after {
-            right: 15px; /* Position right diamond to touch the center */
+            left: calc(50% + 20px); /* Position right diamond */
         }
 
         .diamond-center {
             display: inline-block;
-            width: 20px; /* Adjust width for center diamond */
-            height: 20px; /* Adjust height for center diamond */
+            width: 20px; /* Width for center diamond */
+            height: 20px; /* Height for center diamond */
             background-color: white; /* White fill for center diamond */
+            border: 2px solid black; /* Black outline for center diamond */
             position: relative;
             top: -8px; /* Adjust to align with the line */
             transform: rotate(45deg); /* Center diamond rotated */
@@ -87,14 +95,18 @@
 
     <h1>Sirradran Culinary Traditions</h1>
     <div class="line-with-diamonds">
+        <div class="line"></div>
         <span class="diamond-center"></span> <!-- Center diamond -->
+        <div class="line"></div>
     </div>
 
     <h2>or</h2>
 
     <h3>The Book of Sirradran Cuisines</h3>
     <div class="line-with-diamonds">
+        <div class="line"></div>
         <span class="diamond-center"></span> <!-- Center diamond -->
+        <div class="line"></div>
     </div>
 
     <p>All about the ...</p>
