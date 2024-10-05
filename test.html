@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victorian Title with Diamonds</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            width: 210mm;
+            height: 297mm;
+            margin: auto;
+            padding: 50px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 0;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 20px;
+            font-style: italic;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        h4 {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        p {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* Line with Diamond */
+        .line-with-diamonds {
+            position: relative;
+            display: inline-block;
+            width: 300px;
+            height: 2px;
+            background-color: black;
+            margin: 20px 0;
+        }
+
+        .line-with-diamonds::before,
+        .line-with-diamonds::after {
+            content: '';
+            position: absolute;
+            top: -8px; /* Adjust to vertically align diamonds */
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            transform: rotate(45deg); /* Turn square into diamond */
+        }
+
+        .line-with-diamonds::before {
+            left: 30px; /* Position small left diamond */
+        }
+
+        .line-with-diamonds::after {
+            right: 30px; /* Position small right diamond */
+        }
+
+        .diamond-center {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: black;
+            transform: rotate(45deg); /* Larger center diamond */
+            position: relative;
+            top: -12px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Comprehensive Exploration and Insightful Observations</h1>
+    <div class="line-with-diamonds">
+        <span class="diamond-center"></span> <!-- Center diamond -->
+    </div>
+
+    <h2>on the</h2>
+
+    <h1>Agricultural Practices and the Culinary Traditions</h1>
+    <div class="line-with-diamonds">
+        <span class="diamond-center"></span> <!-- Center diamond -->
+    </div>
+
+    <h2>in the</h2>
+
+    <h1>Autokratoria of Sirradra</h1>
+    <div class="line-with-diamonds">
+        <span class="diamond-center"></span> <!-- Center diamond -->
+    </div>
+
+    <h2>or</h2>
+
+    <h3>The Book of Sirradran Cuisines</h3>
+    <div class="line-with-diamonds">
+        <span class="diamond-center"></span> <!-- Center diamond -->
+    </div>
+
+    <p>All about the ...</p>
+
+    <h4>by H. H. Lee</h4>
+    <p>Ministry of Culture, Autokratoria Sirradra<br>T. E. 303</p>
+
+</body>
+</html>
