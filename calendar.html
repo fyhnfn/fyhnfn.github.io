@@ -66,13 +66,21 @@
     const monthNames = [
         { name: "Primavera", days: 37, specialDays: { 1: "New Year's Day" } },
         { name: "Floralis", days: 38 },
-        { name: "Aestivalis", days: 37, specialDays: { 37: "Harvest Festival", 28: "Prima Tritura", 29: "Secunda Tritura", 30: "Tertia Tritura", 31: "Quarta Tritura", 32: "Quinta Tritura", 33: "Sexta Tritura", 34: "Septima Tritura", 35: "Novissime Tritura" } },
+        { name: "Aestivalis", days: 37, specialDays: { 37: "Harvest Festival" } },
         { name: "Restorare", days: 38 },
         { name: "Revitalis", days: 37 },
         { name: "Nutrientia", days: 38 },
         { name: "Fructalis", days: 37 },
         { name: "Recolere", days: 38 },
-        { name: "Hypoxis", days: 37, specialDays: { 36: "Ventus", 37: "New Year's Eve", 28: "Prota Alonizo", 29: "Beta Alonizo", 30: "Gamma Alonizo", 31: "Delta Alonizo", 32: "Epsilon Alonizo", 33: "Zeta Alonizo", 34: "Theta Alonizo", 35: "Telonikos Alonizo" } },
+        { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
+    ];
+
+    const holidays = [
+        { name: "Aestadies", day: 1, month: 3 },  // Equivalent of 1st of December
+        { name: "Aestasol", day: 19, month: 5 },  // Summer Solstice
+        { name: "Hiemsol", day: 19, month: 11 },  // Winter Solstice
+        { name: "Philoson", day: 19, month: 9 },   // Autumn Equinox
+        { name: "Anthoson", day: 19, month: 4 }    // Spring Equinox
     ];
 
     // Store the calculated New Year's Day for each agricultural year
@@ -131,6 +139,13 @@
                     dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
                 }
 
+                // Check for holidays
+                holidays.forEach(holiday => {
+                    if (holiday.day === day && holiday.month === monthNames.indexOf(month) + 1) {
+                        dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${holiday.name} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
+                    }
+                });
+
                 monthDiv.appendChild(dayDiv);
 
                 // Move to the next day
@@ -175,25 +190,23 @@
             calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the repeated year
             displayCalendar(currentYear);
         } else {
-            alert("No repeated year found within the next 50 years.");
+            alert('No repeated year found in the next 50 years.');
         }
     });
 
-    // Initial calculation and display for the first year
-    calculateNewYearDates(currentYear);
-    displayCalendar(currentYear);
-
     function printCalendar() {
-        const calendarDiv = document.getElementById('calendar');
-        const printContent = calendarDiv.innerHTML;
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Print Calendar</title>');
-        printWindow.document.write('<style>body { font-family: Arial, sans-serif; }</style></head><body>');
-        printWindow.document.write(printContent);
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(document.getElementById('calendar').innerHTML);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.print();
     }
+
+    // Initialize the calendar display
+    calculateNewYearDates(currentYear);
+    displayCalendar(currentYear);
 </script>
 
 </body>
