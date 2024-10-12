@@ -98,12 +98,10 @@
         yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
 
         let totalDays = 0;
-        const gregorianStart = newYearDates[agriculturalYear - 1];
-        let gregorianDay = gregorianStart.getDate();
-        let gregorianMonth = gregorianStart.getMonth();
-        let gregorianMonthDays = gregorianDaysInMonth(gregorianYear);
+        let gregorianDate = newYearDates[agriculturalYear - 1]; // Start from New Year's Day
+        let dayOfWeek = gregorianDate.getDay();
 
-        monthNames.forEach((month, index) => {
+        monthNames.forEach((month) => {
             const monthDiv = document.createElement('div');
             monthDiv.className = 'month';
 
@@ -113,25 +111,23 @@
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
 
+                // Prepare output for the agricultural day
                 const agriculturalDay = `${day}th day of ${month.name}, Year ${agriculturalYear}`;
-                let gregorianStartDay = `${gregorianDay}/${gregorianMonth + 1}`;
-                let dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][gregorianStart.getDay()];
+                let gregorianStartDay = `${gregorianDate.getDate()}/${gregorianDate.getMonth() + 1}`;
+                let fullDayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek];
 
-                dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay}, ${dayOfWeek})`;
+                dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})`;
 
                 // Handle special days
                 if (month.specialDays && month.specialDays[day]) {
-                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay}, ${dayOfWeek})</span>`;
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
                 }
 
                 monthDiv.appendChild(dayDiv);
 
-                gregorianDay++;
-                if (gregorianDay > gregorianMonthDays[gregorianMonth]) {
-                    gregorianDay = 1;
-                    gregorianMonth = (gregorianMonth + 1) % 12;
-                    gregorianMonthDays = gregorianDaysInMonth(gregorianYear);
-                }
+                // Move to the next day
+                gregorianDate.setDate(gregorianDate.getDate() + 1); // Increment Gregorian date
+                dayOfWeek = (dayOfWeek + 1) % 7; // Update the day of the week
             }
 
             calendarDiv.appendChild(monthDiv);
