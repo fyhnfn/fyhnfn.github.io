@@ -22,11 +22,11 @@
             border: 1px solid #333;
             padding: 15px;
             margin: 10px;
-            width: 350px;
+            width: 400px;
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .special-day, .planting {
+        .special-day, .planting, .holiday {
             font-weight: bold;
             color: #FF5733;
         }
@@ -77,27 +77,37 @@
         { month: "Primavera", crop: "Corn" },
         { month: "Restorare", crop: "Clover" },
         { month: "Fructalis", crop: "Wheat" },
-        { month: "Restorare", crop: "Barley" },
+        { month: "Fructalis", crop: "Barley" },
         { month: "Restorare", crop: "Clover" },
         { month: "Fructalis", crop: "Corn" }
     ];
 
-    function getSpecialDays(year) {
-        return {
-            aestadies: `${year} - 1st of December`,
-            aestasol: `${year} - 21st of December`,
-            hiemsol: `${year} - 21st of June`,
-            philoson: `${year} - 21st of March`,
-            anthoson: `${year} - 21st of September`,
-        };
-    }
+    const holidays = {
+        "1": "New Year",
+        "37": "Harvest Festival",
+        "36": "Ventus",
+        "28": "Prima Tritura",
+        "29": "Secunda Tritura",
+        "30": "Tertia Tritura",
+        "31": "Quarta Tritura",
+        "32": "Quinta Tritura",
+        "33": "Sexta Tritura",
+        "34": "Septima Tritura",
+        "35": "Novissime Tritura",
+        "1": "Aestatides",
+        "21": {
+            "3": "Philoson",
+            "6": "Hiemsol",
+            "9": "Anthoson",
+            "12": "Aestasol"
+        }
+    };
 
     function getCurrentAgriculturalDate(year) {
-        return `1st of Primavera, Year ${year} (${getGregorianDate(year, 0, 0)})`;
+        return `1st of Primavera, Year ${year}`;
     }
 
     function getGregorianDate(year, monthOffset, dayOffset) {
-        // Year starts on March 25
         const startDate = new Date(year, 2, 25); // March is month 2 (0-indexed)
         startDate.setMonth(startDate.getMonth() + monthOffset);
         startDate.setDate(startDate.getDate() + dayOffset);
@@ -130,22 +140,30 @@
                     eventDiv.innerHTML = `<span class="planting">${cropMonth}, Year ${year}: Plant ${crop} (${getGregorianDate(year, monthIndex, day - 1)})</span>`;
                     plantingIndex = (plantingIndex + 1) % plantingCycle.length; // Cycle through planting events
                 } else {
-                    eventDiv.innerHTML = `Day ${day} (${getGregorianDate(year, monthIndex, day - 1)})`;
+                    eventDiv.innerHTML = `${day}${getOrdinalSuffix(day)} day of ${month.name}, Year ${year} (${getGregorianDate(year, monthIndex, day - 1)})`;
+                }
+
+                // Add holiday event
+                if (day in holidays) {
+                    const holiday = holidays[day];
+                    if (typeof holiday === 'string') {
+                        eventDiv.innerHTML += `<br><span class="holiday">${holiday}</span>`;
+                    } else if (typeof holiday === 'object' && holiday[monthIndex + 1]) {
+                        eventDiv.innerHTML += `<br><span class="holiday">${holiday[monthIndex + 1]}</span>`;
+                    }
                 }
 
                 monthDiv.appendChild(eventDiv);
             }
 
-            // Add special days
-            const specialDays = getSpecialDays(year);
-            monthDiv.innerHTML += `<p class="special-day">Aestadies: ${specialDays.aestadies} - ${new Date(year, 11, 1).toLocaleString('en-US', { weekday: 'long' })}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Aestasol: ${specialDays.aestasol} - ${new Date(year, 11, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Hiemsol: ${specialDays.hiemsol} - ${new Date(year, 5, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Philoson: ${specialDays.philoson} - ${new Date(year, 2, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Anthoson: ${specialDays.anthoson} - ${new Date(year, 8, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
-
             calendarDiv.appendChild(monthDiv);
         }
+    }
+
+    function getOrdinalSuffix(day) {
+        const suffixes = ["th", "st", "nd", "rd"];
+        const value = day % 100;
+        return suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
     }
 
     document.getElementById('nextYear').addEventListener('click', () => {
