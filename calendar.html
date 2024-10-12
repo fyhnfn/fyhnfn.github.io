@@ -179,7 +179,8 @@
     displayCalendar(currentYear);
 
     function printCalendar() {
-        const printContent = document.getElementById('calendar').innerHTML;
+        const calendarDiv = document.getElementById('calendar');
+        const printContent = calendarDiv.innerHTML;
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Print Calendar</title>');
         printWindow.document.write('<style>body {font-family: Arial, sans-serif;} .month {border: 1px solid #333; padding: 15px; margin: 10px;} .day-range, .special-day {font-weight: bold; color: #00509E;} .special-day {color: #FF5733;} .month h2 {margin: 0; font-size: 18px;} </style>');
