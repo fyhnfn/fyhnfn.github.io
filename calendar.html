@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .calendar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .month {
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px;
+            width: 300px;
+        }
+        .day-range, .special-day {
+            font-weight: bold;
+            color: #00509E;
+        }
+        .special-day {
+            color: #FF5733;
+        }
+        .month h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        #print-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calendar-container">
+    <div class="controls">
+        <button id="prevYear">Previous Year</button>
+        <button id="nextYear">Next Year</button>
+        <span id="yearDisplay"></span>
+    </div>
+
+    <div id="calendar"></div>
+
+    <button id="print-button" onclick="printCalendar()">Print Calendar</button>
+</div>
+
+<script>
+    const monthNames = [
+        { name: "Primavera", days: 37, specialDays: { 1: "New Year's Day" } },
+        { name: "Floralis", days: 38 },
+        { name: "Aestivalis", days: 37, specialDays: { 37: "Harvest Festival" } },
+        { name: "Restorare", days: 38 },
+        { name: "Revitalis", days: 37 },
+        { name: "Nutrientia", days: 38, specialDays: {} },
+        { name: "Fructalis", days: 37 },
+        { name: "Recolere", days: 38 },
+        { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
+    ];
+
+    const gregorianStart = new Date(2025, 2, 25); // March 25th, 2025
+
+    function isLeapYear(year) {
+        return ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0);
+    }
+
+    function getGregorianMonthDays(month, year) {
+        const daysInMonth = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31];
+        if (month === 11) return isLeapYear(year) ? 29 : 28; // February
+        return daysInMonth[month % 12];
+    }
+
+    let currentYear = 2025;
+
+    function getSolsticeEquinoxDates(year) {
+        return {
+            aestadies: new Date(year, 11, 1), // 1st December
+            aestasol: new Date(year, 11, 21), // Summer Solstice (approx. 21st December)
+            hiemsol: new Date(year, 5, 21),   // Winter Solstice (approx. 21st June)
+            philoson: new Date(year, 2, 21),  // Autumn Equinox (approx. 21st March)
+            anthoson: new Date(year, 8, 23)   // Spring Equinox (approx. 23rd September)
+        };
+    }
+
+    function displayCalendar(year) {
+        const calendarDiv = document.getElementById('calendar');
+        calendarDiv.innerHTML = '';
+        const yearDisplay = document.getElementById('yearDisplay');
+        yearDisplay.innerText = `Agricultural Year: ${year}, Gregorian Year: ${gregorianStart.getFullYear()}`;
+
+        let totalDays = 0;
+        let gregorianDay = gregorianStart.getDate();
+        let gregorianMonth = gregorianStart.getMonth();
+        let gregorianYear = gregorianStart.getFullYear();
+
+        const solsticeEquinoxDates = getSolsticeEquinoxDates(year);
+
+        monthNames.forEach((month, index) => {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'month';
+
+            const startDay = totalDays + 1;
+            const endDay = totalDays + month.days;
+            totalDays = endDay;
+
+            let gregorianStartDay = `${gregorianDay}/${gregorianMonth + 1}/${gregorianYear}`;
+            gregorianDay += month.days;
+
+            while (gregorianDay > getGregorianMonthDays(gregorianMonth, gregorianYear)) {
+                gregorianDay -= getGregorianMonthDays(gregorianMonth, gregorianYear);
+                gregorianMonth++;
+                if (gregorianMonth > 11) {
+                    gregorianMonth = 0;
+                    gregorianYear++;
+                }
+            }
+            let gregorianEndDay = `${gregorianDay}/${gregorianMonth + 1}/${gregorianYear}`;
+
+            monthDiv.innerHTML = `
+                <h2>${month.name} (${year})</h2>
+                <p class="day-range">Day ${startDay} - Day ${endDay}</p>
+                <p>Gregorian: ${gregorianStartDay} - ${gregorianEndDay}</p>
+            `;
+
+            // Display special days
+            for (let day = 1; day <= month.days; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+
+                // Display changing special days
+                if (month.specialDays && month.specialDays[day]) {
+                    dayDiv.innerHTML = `<span class="special-day">Day ${startDay + day - 1}: ${month.specialDays[day]}</span>`;
+                }
+
+                monthDiv.appendChild(dayDiv);
+            }
+
+            calendarDiv.appendChild(monthDiv);
+        });
+    }
+
+    document.getElementById('nextYear').addEventListener('click', () => {
+        currentYear++;
+        displayCalendar(currentYear);
+    });
+
+    document.getElementById('prevYear').addEventListener('click', () => {
+        currentYear--;
+        displayCalendar(currentYear);
+    });
+
+    // Initial display
+    displayCalendar(currentYear);
+
+    function printCalendar() {
+        const printContent = document.getElementById('calendar').innerHTML;
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Print Calendar</title>');
+        printWindow.document.write('<style>body {font-family: Arial, sans-serif;} .month {border: 1px solid #333; padding: 15px; margin: 10px;} .day-range, .special-day {font-weight: bold; color: #00509E;} .special-day {color: #FF5733;} .month h2 {margin: 0; font-size: 18px;} </style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+
+</body>
+</html>
