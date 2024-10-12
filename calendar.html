@@ -66,7 +66,14 @@
         { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
     ];
 
-    const gregorianStart = new Date(2025, 2, 25); // March 25th, 2025
+    // Define New Year's Day for each year as a dynamic date (e.g., March 25, 2025, but can shift in future years)
+    const newYearDates = [
+        new Date(2025, 2, 25), // Year 1 starts on March 25, 2025
+        new Date(2026, 2, 24), // Year 2 starts on March 24, 2026
+        new Date(2027, 2, 26), // Year 3 starts on March 26, 2027
+        // Add more years as needed
+    ];
+
     const daysInGregorianMonth = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28]; // Gregorian months starting in March
 
     let currentYear = 1;
@@ -91,6 +98,7 @@
         yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
 
         let totalDays = 0;
+        const gregorianStart = newYearDates[agriculturalYear - 1];
         let gregorianDay = gregorianStart.getDate();
         let gregorianMonth = gregorianStart.getMonth();
 
@@ -163,13 +171,4 @@
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Print Calendar</title>');
         printWindow.document.write('<style>body {font-family: Arial, sans-serif;} .month {border: 1px solid #333; padding: 15px; margin: 10px;} .day-range, .special-day {font-weight: bold; color: #00509E;} .special-day {color: #FF5733;} .month h2 {margin: 0; font-size: 18px;} </style>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write(printContent);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.print();
-    }
-</script>
-
-</body>
-</html>
+        printWindow
