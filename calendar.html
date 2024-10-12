@@ -7,6 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
         }
         .calendar-container {
             display: flex;
@@ -22,6 +23,8 @@
             padding: 15px;
             margin: 10px;
             width: 300px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .day-range, .special-day, .planting {
             font-weight: bold;
@@ -68,24 +71,21 @@
         { name: "Hypoxis", days: 37 },
     ];
 
-    const gregorianStart = new Date(2025, 2, 25); // March 25th, 2025
-    const daysInGregorianMonth = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28]; // March to February
-    const currentYear = 2025;
-    let specialDays = {};
-    
+    let currentYear = 2025;
+
     function getPlantingCycle(year) {
         const cycle = [
-            { day: 1, month: "Primavera", crop: "Wheat" },
-            { day: 1, month: "Restorare", crop: "Clover" },
-            { day: 1, month: "Fructalis", crop: "Barley" },
-            { day: 1, month: "Primavera", crop: "Corn" },
-            { day: 1, month: "Restorare", crop: "Clover" },
-            { day: 1, month: "Fructalis", crop: "Wheat" },
-            { day: 1, month: "Restorare", crop: "Barley" },
-            { day: 1, month: "Primavera", crop: "Clover" },
-            { day: 1, month: "Fructalis", crop: "Corn" }
+            { month: "Primavera", crop: "Wheat" },
+            { month: "Restorare", crop: "Clover" },
+            { month: "Fructalis", crop: "Barley" },
+            { month: "Primavera", crop: "Corn" },
+            { month: "Restorare", crop: "Clover" },
+            { month: "Fructalis", crop: "Wheat" },
+            { month: "Restorare", crop: "Barley" },
+            { month: "Restorare", crop: "Clover" },
+            { month: "Fructalis", crop: "Corn" }
         ];
-        return cycle[(year - currentYear) % cycle.length];
+        return cycle[(year - 2025) % cycle.length];
     }
 
     function getSpecialDays(year) {
@@ -117,17 +117,8 @@
         };
     }
 
-    function getGregorianDate(year, totalDays) {
-        let gregorianDate = new Date(gregorianStart);
-        gregorianDate.setFullYear(year);
-        gregorianDate.setDate(gregorianStart.getDate() + totalDays);
-        return gregorianDate;
-    }
-
     function getCurrentAgriculturalDate(year) {
-        const currentDate = new Date();
-        const agriculturalYear = year + (currentDate < gregorianStart ? -1 : 0);
-        return `${currentDate.getDate()}th of ${monthNames[currentDate.getMonth()].name}, Year ${agriculturalYear}`;
+        return `1st of Primavera, Year ${year}`;
     }
 
     function displayCalendar(year) {
@@ -135,66 +126,59 @@
         calendarDiv.innerHTML = '';
         const yearDisplay = document.getElementById('yearDisplay');
         const currentDateDisplay = document.getElementById('currentDate');
-        yearDisplay.innerText = `Agricultural Year: ${year}, Gregorian Year: ${gregorianStart.getFullYear()}`;
+        yearDisplay.innerText = `Agricultural Year: ${year}`;
         currentDateDisplay.innerText = `Current Date in Agricultural Calendar: ${getCurrentAgriculturalDate(year)}`;
 
-        let totalDays = 0;
         monthNames.forEach((month) => {
             const monthDiv = document.createElement('div');
             monthDiv.className = 'month';
-
-            const startDay = totalDays + 1;
-            const endDay = totalDays + month.days;
-            totalDays = endDay;
-
-            monthDiv.innerHTML = `<h2>${month.name} (${year})</h2><p class="day-range">Day ${startDay} - Day ${endDay}</p>`;
+            monthDiv.innerHTML = `<h2>${month.name} (${year})</h2>`;
 
             // Display special days
             for (let day = 1; day <= month.days; day++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
 
-                if (day === 1 && month.name === "Restorare") {
-                    dayDiv.innerHTML = `<span class="special-day">Aestadies: ${specialDays.aestadies}</span>`;
-                } else if (day === 21 && month.name === "Floralis") {
-                    dayDiv.innerHTML = `<span class="special-day">Aestasol: ${specialDays.aestasol}</span>`;
-                } else if (day === 21 && month.name === "Revitalis") {
-                    dayDiv.innerHTML = `<span class="special-day">Hiemsol: ${specialDays.hiemsol}</span>`;
-                } else if (day === 21 && month.name === "Nutrientia") {
-                    dayDiv.innerHTML = `<span class="special-day">Philoson: ${specialDays.philoson}</span>`;
-                } else if (day === 21 && month.name === "Recolere") {
-                    dayDiv.innerHTML = `<span class="special-day">Anthoson: ${specialDays.anthoson}</span>`;
+                if (day === 1 && month.name === "Primavera") {
+                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Wheat</strong></span>`;
+                } else if (day === 1 && month.name === "Restorare") {
+                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Clover</strong></span>`;
+                } else if (day === 1 && month.name === "Fructalis") {
+                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Barley</strong></span>`;
+                } else if (day === 1 && month.name === "Primavera" && month.name !== "Restorare" && month.name !== "Fructalis") {
+                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Corn</strong></span>`;
                 } else {
-                    dayDiv.innerText = `Day ${startDay + day - 1}`;
+                    dayDiv.innerText = `Day ${day}`;
                 }
 
                 monthDiv.appendChild(dayDiv);
             }
 
+            // Add special days
+            const specialDays = getSpecialDays(year);
+            monthDiv.innerHTML += `<p class="special-day">Aestadies: ${specialDays.aestadies}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Aestasol: ${specialDays.aestasol}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Hiemsol: ${specialDays.hiemsol}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Philoson: ${specialDays.philoson}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Anthoson: ${specialDays.anthoson}</p>`;
+
             calendarDiv.appendChild(monthDiv);
         });
-
-        // Add planting schedule
-        const plantingDiv = document.createElement('div');
-        plantingDiv.className = 'planting';
-        const plantingInfo = getPlantingCycle(year);
-        plantingDiv.innerHTML = `Plant <strong>${plantingInfo.crop}</strong> on ${plantingInfo.day}th of ${plantingInfo.month}`;
-        calendarDiv.appendChild(plantingDiv);
-
-        // Update special days for the year
-        specialDays = getSpecialDays(year);
     }
 
     document.getElementById('nextYear').addEventListener('click', () => {
-        displayCalendar(currentYear++);
+        displayCalendar(++currentYear);
     });
 
     document.getElementById('prevYear').addEventListener('click', () => {
-        displayCalendar(currentYear--);
+        displayCalendar(--currentYear);
     });
 
     document.getElementById('skipYear').addEventListener('click', () => {
-        // Implement logic for skipping to repeated years if needed
+        const repeatedYear = prompt("Enter the repeated year:");
+        if (repeatedYear) {
+            displayCalendar(parseInt(repeatedYear));
+        }
     });
 
     function printCalendar() {
