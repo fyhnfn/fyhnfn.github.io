@@ -12,7 +12,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 80px;
+            margin-top: 80px; /* Adjusted margin to prevent overlap */
         }
         .controls {
             position: fixed;
@@ -45,9 +45,6 @@
         #print-button {
             margin-top: 20px;
         }
-        #holidaySummary {
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
@@ -61,8 +58,6 @@
     </div>
 
     <div id="calendar"></div>
-
-    <div id="holidaySummary"></div>
 
     <button id="print-button" onclick="printCalendar()">Print Calendar</button>
 </div>
@@ -80,15 +75,22 @@
         { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
     ];
 
-    let newYearDates = [];
-    const holidays = {
-        Aestadies: 0,   // 0th day (1st day of Primavera)
-        Aestasol: 59,   // 60th day (Summer Solstice)
-        Hiemsol: 181,   // 182nd day (Winter Solstice)
-        Philoson: 118,  // 119th day (Autumn Equinox)
-        Anthoson: 75    // 76th day (Spring Equinox)
-    };
+    // Function to dynamically calculate holiday dates based on agricultural year
+    function calculateHolidays(agriculturalYear, newYearDate) {
+        const holidays = {
+            Aestadies: new Date(newYearDate.getTime() + (1 - 1) * 24 * 60 * 60 * 1000), // 1st of Primavera
+            Aestasol: new Date(newYearDate.getTime() + (60 - 1) * 24 * 60 * 60 * 1000), // 60th day (Summer Solstice)
+            Hiemsol: new Date(newYearDate.getTime() + (182 - 1) * 24 * 60 * 60 * 1000), // 182nd day (Winter Solstice)
+            Philoson: new Date(newYearDate.getTime() + (119 - 1) * 24 * 60 * 60 * 1000), // 119th day (Autumn Equinox)
+            Anthoson: new Date(newYearDate.getTime() + (76 - 1) * 24 * 60 * 60 * 1000)  // 76th day (Spring Equinox)
+        };
+        return holidays;
+    }
 
+    // Store the calculated New Year's Day for each agricultural year
+    let newYearDates = [];
+
+    // Calculate the start date for each agricultural year dynamically
     function calculateNewYearDates(startingYear) {
         let previousEnd = new Date(2025, 2, 25); // March 25th, 2025 for Year 1
         newYearDates = [new Date(previousEnd.getTime() + 24 * 60 * 60 * 1000)]; // New Year is the day after the previous year's end
@@ -104,15 +106,14 @@
 
     function displayCalendar(agriculturalYear) {
         const calendarDiv = document.getElementById('calendar');
-        const holidaySummaryDiv = document.getElementById('holidaySummary');
         calendarDiv.innerHTML = '';
-        holidaySummaryDiv.innerHTML = '';
-        
         const yearDisplay = document.getElementById('yearDisplay');
         const gregorianYear = 2025 + (agriculturalYear - 1);
         yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
 
         let newYearDate = newYearDates[agriculturalYear - 1];
+        const holidays = calculateHolidays(agriculturalYear, newYearDate); // Calculate the holidays for the current year
+
         let totalDays = 0;
         let gregorianDate = newYearDate; // Start from New Year's Day
         let dayOfWeek = gregorianDate.getDay();
@@ -127,6 +128,7 @@
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
 
+                // Prepare output for the agricultural day
                 const agriculturalDay = `${day}th day of ${month.name}, Year ${agriculturalYear}`;
                 let gregorianStartDay = `${gregorianDate.getDate()}/${gregorianDate.getMonth() + 1}`;
                 let fullDayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek];
@@ -138,7 +140,16 @@
                     dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
                 }
 
+                // Check for holidays
+                for (const holiday in holidays) {
+                    const holidayDate = holidays[holiday];
+                    if (holidayDate.getDate() === day && holidayDate.getMonth() === (monthNames.indexOf(month))) {
+                        dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${holiday} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
+                    }
+                }
+
                 monthDiv.appendChild(dayDiv);
+
                 // Move to the next day
                 gregorianDate.setDate(gregorianDate.getDate() + 1); // Increment Gregorian date
                 dayOfWeek = (dayOfWeek + 1) % 7; // Update the day of the week
@@ -146,24 +157,9 @@
 
             calendarDiv.appendChild(monthDiv);
         });
-
-        displayHolidaySummary();
     }
 
-    function displayHolidaySummary() {
-        const holidaySummaryDiv = document.getElementById('holidaySummary');
-        holidaySummaryDiv.innerHTML = `<h3>Holiday Dates Summary</h3>`;
-
-        for (const holiday in holidays) {
-            const holidayOffset = holidays[holiday];
-            const holidayDates = newYearDates.map((newYearDate, index) => {
-                const holidayDate = new Date(newYearDate.getTime() + holidayOffset * 24 * 60 * 60 * 1000);
-                return `Agricultural Year ${index + 1}: ${holidayDate.getDate()}/${holidayDate.getMonth() + 1} (${holiday})`;
-            });
-            holidaySummaryDiv.innerHTML += `<p>${holiday}: ${holidayDates.join(', ')}</p>`;
-        }
-    }
-
+    // Identify repeated years based on New Year and leap year condition
     function findNextRepeatedYear() {
         const currentNewYearDate = newYearDates[currentYear - 1].toDateString();
         for (let i = currentYear + 1; i <= 50; i++) { // Check up to 50 years ahead
@@ -189,4 +185,31 @@
         }
     });
 
-    document.getElementById('repeatYear').
+    document.getElementById('repeatYear').addEventListener('click', () => {
+        const nextRepeatedYear = findNextRepeatedYear();
+        if (nextRepeatedYear) {
+            currentYear = nextRepeatedYear;
+            calculateNewYearDates(currentYear); // Recalculate for the found repeated year
+            displayCalendar(currentYear);
+        } else {
+            alert('No repeated year found in the next 50 years.');
+        }
+    });
+
+    function printCalendar() {
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Print Calendar</title>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(document.getElementById('calendar').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+
+    // Initialize the calendar display
+    calculateNewYearDates(currentYear);
+    displayCalendar(currentYear);
+</script>
+
+</body>
+</html>
