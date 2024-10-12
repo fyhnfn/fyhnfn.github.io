@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classic Monthly Calendar</title>
+    <title>Agricultural Calendar</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            background: #007bff;
+            background: #4CAF50;
             color: white;
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
@@ -48,7 +48,7 @@
         }
         .day {
             border: 1px solid #ccc;
-            height: 60px;
+            height: 100px; /* Increased height for more space */
             padding: 5px;
             position: relative;
             display: flex;
@@ -85,22 +85,23 @@
 
 <script>
     const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "Primavera", "Restorare", "Fructalis"
     ];
-    
-    const events = {
-        "2024-01-01": "New Year's Day",
-        "2024-02-14": "Valentine's Day",
-        "2024-03-17": "St. Patrick's Day",
-        "2024-04-01": "April Fool's Day",
-        "2024-07-04": "Independence Day",
-        "2024-10-31": "Halloween",
-        "2024-12-25": "Christmas"
+
+    const plantingSchedule = {
+        "2025-03-01": "Plant Wheat",
+        "2025-05-01": "Plant Clover",
+        "2025-08-01": "Plant Barley",
+        "2026-03-01": "Plant Corn",
+        "2026-05-01": "Plant Clover",
+        "2026-08-01": "Plant Wheat",
+        "2026-05-01": "Plant Barley",
+        "2027-03-01": "Plant Clover",
+        "2027-08-01": "Plant Corn",
     };
 
-    let currentDate = new Date();
-    
+    let currentDate = new Date(2025, 0, 1); // Start from March of Year 1
+
     function displayCalendar() {
         const monthYearDisplay = document.getElementById('monthYearDisplay');
         const daysContainer = document.getElementById('daysContainer');
@@ -108,7 +109,7 @@
         const month = currentDate.getMonth();
         const year = currentDate.getFullYear();
 
-        monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+        monthYearDisplay.textContent = `${monthNames[month]} Year ${year}`;
         daysContainer.innerHTML = '';
 
         // Get first day of the month
@@ -130,12 +131,12 @@
             dayDiv.className = 'day';
             dayDiv.innerHTML = `<div class="day-header">${day}</div>`;
             
-            // Format date for events
+            // Format date for planting schedule
             const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            if (events[formattedDate]) {
+            if (plantingSchedule[formattedDate]) {
                 const eventDiv = document.createElement('div');
                 eventDiv.className = 'event';
-                eventDiv.textContent = events[formattedDate];
+                eventDiv.textContent = plantingSchedule[formattedDate];
                 dayDiv.appendChild(eventDiv);
             }
             
