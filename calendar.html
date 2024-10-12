@@ -1,192 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agricultural Calendar</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-        }
-        .calendar-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-        .controls {
-            margin-bottom: 20px;
-        }
-        .month {
-            border: 1px solid #333;
-            padding: 15px;
-            margin: 10px;
-            width: 400px;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .special-day, .planting, .holiday {
-            font-weight: bold;
-            color: #FF5733;
-        }
-        .month h2 {
-            margin: 0;
-            font-size: 18px;
-        }
-        #print-button {
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
+from datetime import datetime, timedelta
 
-<div class="calendar-container">
-    <div class="controls">
-        <button id="prevYear">Previous Year</button>
-        <button id="nextYear">Next Year</button>
-        <button id="skipYear">Skip to Repeated Year</button>
-        <span id="yearDisplay"></span>
-        <span id="currentDate"></span>
-    </div>
+# Define constants
+MONTHS = [
+    "Primavera",
+    "Floralis",
+    "Aestivalis",
+    "Restorare",
+    "Revitalis",
+    "Nutrientia",
+    "Fructalis",
+    "Recolere",
+    "Hypoxis"
+]
 
-    <div id="calendar"></div>
+Holidays = {
+    "New Year": (1, "Primavera"),  # 1st of Primavera
+    "Harvest Festival": (37, "Aestivalis"),  # 37th of Aestavalis (New Year's Eve)
+    "Harvest Festival": (37, "Hypoxis"),  # 37th of Hypoxis (also New Year's Day)
+    "Ventus": (36, "Aestivalis"),
+    "Anemos": (36, "Hypoxis"),
+    "Prima Tritura": (28, "Aestivalis"),
+    "Secunda Tritura": (29, "Aestivalis"),
+    "Tertia Tritura": (30, "Aestivalis"),
+    "Quarta Tritura": (31, "Aestivalis"),
+    "Quinta Tritura": (32, "Aestivalis"),
+    "Sexta Tritura": (33, "Aestivalis"),
+    "Septima Tritura": (34, "Aestivalis"),
+    "Novissime Tritura": (35, "Aestivalis"),
+    "Prota Alonizo": (28, "Hypoxis"),
+    "Beta Alonizo": (29, "Hypoxis"),
+    "Gamma Alonizo": (30, "Hypoxis"),
+    "Delta Alonizo": (31, "Hypoxis"),
+    "Epsilon Alonizo": (32, "Hypoxis"),
+    "Zeta Alonizo": (33, "Hypoxis"),
+    "Theta Alonizo": (34, "Hypoxis"),
+    "Telonikos Alonizo": (35, "Hypoxis"),
+    "Aestadies": (1, "Floralis"),  # 1st of December
+    "Aestasol": (21, "Aestivalis"),  # 21st of December
+    "Hiemsol": (21, "Revitalis"),  # 21st of June
+    "Philoson": (21, "Nutrientia"),  # 21st of March
+    "Anthoson": (21, "Fructalis"),  # 21st of September
+}
 
-    <button id="print-button" onclick="printCalendar()">Print Calendar</button>
-</div>
+# Define the planting cycle
+planting_cycle = {
+    "Primavera": ["Wheat", "Corn"],
+    "Restorare": ["Clover"],
+    "Fructalis": ["Barley", "Wheat", "Corn"]
+}
 
-<script>
-    const monthNames = [
-        { name: "Primavera", days: 37 },
-        { name: "Floralis", days: 38 },
-        { name: "Aestivalis", days: 37 },
-        { name: "Restorare", days: 38 },
-        { name: "Revitalis", days: 37 },
-        { name: "Nutrientia", days: 38 },
-        { name: "Fructalis", days: 37 },
-        { name: "Recolere", days: 38 },
-        { name: "Hypoxis", days: 37 },
-    ];
+# Get the current agricultural year and Gregorian date
+def get_agricultural_date(agricultural_year, current_day):
+    start_date = datetime(2025, 3, 25)  # 25th of March 2025 is the start of Year 1
+    agricultural_date = start_date + timedelta(days=current_day - 1)
+    return agricultural_date
 
-    let currentYear = 2025;
+# Generate a full calendar
+def generate_full_calendar():
+    days_in_month = [37, 30, 37, 37, 37, 37, 37, 37, 37]  # Days in each month
+    current_day = 0
+    calendar = []
 
-    const plantingCycle = [
-        { month: "Primavera", crop: "Wheat" },
-        { month: "Restorare", crop: "Clover" },
-        { month: "Fructalis", crop: "Barley" },
-        { month: "Primavera", crop: "Corn" },
-        { month: "Restorare", crop: "Clover" },
-        { month: "Fructalis", crop: "Wheat" },
-        { month: "Fructalis", crop: "Barley" },
-        { month: "Restorare", crop: "Clover" },
-        { month: "Fructalis", crop: "Corn" }
-    ];
+    for year in range(-1, 10):  # Adjust this range to include more years
+        for month_index, month in enumerate(MONTHS):
+            for day in range(1, days_in_month[month_index] + 1):
+                current_day += 1
+                # Calculate the Gregorian date
+                agricultural_date = get_agricultural_date(year + 1, current_day)
+                day_name = agricultural_date.strftime("%A")
+                events_today = get_events(month, day)
+                
+                # Format the date string
+                formatted_date = f"{day}th day of {month}, Year {year + 1} ({day_name}, the {day}{get_day_suffix(day)} day of {agricultural_date.year})"
+                calendar.append((formatted_date, events_today))
+    
+    return calendar
 
-    const holidays = {
-        "1": "New Year",
-        "37": "Harvest Festival",
-        "36": "Ventus",
-        "28": "Prima Tritura",
-        "29": "Secunda Tritura",
-        "30": "Tertia Tritura",
-        "31": "Quarta Tritura",
-        "32": "Quinta Tritura",
-        "33": "Sexta Tritura",
-        "34": "Septima Tritura",
-        "35": "Novissime Tritura",
-        "1": "Aestatides",
-        "21": {
-            "3": "Philoson",
-            "6": "Hiemsol",
-            "9": "Anthoson",
-            "12": "Aestasol"
-        }
-    };
+def get_day_suffix(day):
+    """Returns the suffix for the day (st, nd, rd, th)."""
+    if 10 <= day % 100 <= 20:
+        return "th"
+    else:
+        return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
 
-    function getCurrentAgriculturalDate(year) {
-        return `1st of Primavera, Year ${year}`;
-    }
+# Get events for a given date
+def get_events(month, day):
+    events = []
+    for event_name, (event_day, event_month) in Holidays.items():
+        if event_month == month and event_day == day:
+            events.append(event_name)
+    if month == "Primavera" and day == 1:  # New Year
+        events.append("New Year")
+    return events
 
-    function getGregorianDate(year, monthOffset, dayOffset) {
-        const startDate = new Date(year, 2, 25); // March is month 2 (0-indexed)
-        startDate.setMonth(startDate.getMonth() + monthOffset);
-        startDate.setDate(startDate.getDate() + dayOffset);
-        return startDate.toLocaleDateString();
-    }
+# Print the full calendar
+def print_full_calendar():
+    full_calendar = generate_full_calendar()
+    for date_info in full_calendar:
+        date_string, events_today = date_info
+        events_display = ", ".join(events_today) if events_today else "No Events"
+        # Bold red for festival dates
+        for event in events_today:
+            if event in Holidays:
+                day, month = Holidays[event]
+                date_string = date_string.replace(f"{day}th day of {month},", f"\033[1;31m{day}th day of {month},\033[0m")  # Make it bold and red
+        print(f"{date_string}: {events_display}")
 
-    function displayCalendar(year) {
-        const calendarDiv = document.getElementById('calendar');
-        calendarDiv.innerHTML = '';
-        const yearDisplay = document.getElementById('yearDisplay');
-        const currentDateDisplay = document.getElementById('currentDate');
-        yearDisplay.innerText = `Agricultural Year: ${year}`;
-        currentDateDisplay.innerText = `Current Date in Agricultural Calendar: ${getCurrentAgriculturalDate(year)}`;
-
-        let plantingIndex = (year - 2025) % plantingCycle.length;
-
-        for (let monthIndex = 0; monthIndex < monthNames.length; monthIndex++) {
-            const month = monthNames[monthIndex];
-            const monthDiv = document.createElement('div');
-            monthDiv.className = 'month';
-            monthDiv.innerHTML = `<h2>${month.name}, Year ${year}</h2>`;
-
-            for (let day = 1; day <= month.days; day++) {
-                const eventDiv = document.createElement('div');
-                eventDiv.className = 'day';
-
-                // Display planting event if it matches the planting schedule
-                if (day === 1) {
-                    const { month: cropMonth, crop } = plantingCycle[plantingIndex];
-                    eventDiv.innerHTML = `<span class="planting">${cropMonth}, Year ${year}: Plant ${crop} (${getGregorianDate(year, monthIndex, day - 1)})</span>`;
-                    plantingIndex = (plantingIndex + 1) % plantingCycle.length; // Cycle through planting events
-                } else {
-                    eventDiv.innerHTML = `${day}${getOrdinalSuffix(day)} day of ${month.name}, Year ${year} (${getGregorianDate(year, monthIndex, day - 1)})`;
-                }
-
-                // Add holiday event
-                if (day in holidays) {
-                    const holiday = holidays[day];
-                    if (typeof holiday === 'string') {
-                        eventDiv.innerHTML += `<br><span class="holiday">${holiday}</span>`;
-                    } else if (typeof holiday === 'object' && holiday[monthIndex + 1]) {
-                        eventDiv.innerHTML += `<br><span class="holiday">${holiday[monthIndex + 1]}</span>`;
-                    }
-                }
-
-                monthDiv.appendChild(eventDiv);
-            }
-
-            calendarDiv.appendChild(monthDiv);
-        }
-    }
-
-    function getOrdinalSuffix(day) {
-        const suffixes = ["th", "st", "nd", "rd"];
-        const value = day % 100;
-        return suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
-    }
-
-    document.getElementById('nextYear').addEventListener('click', () => {
-        displayCalendar(++currentYear);
-    });
-
-    document.getElementById('prevYear').addEventListener('click', () => {
-        displayCalendar(--currentYear);
-    });
-
-    document.getElementById('skipYear').addEventListener('click', () => {
-        const repeatedYear = prompt("Enter the repeated year:");
-        if (repeatedYear) {
-            displayCalendar(parseInt(repeatedYear));
-        }
-    });
-
-    function printCalendar() {
-        window.print();
-    }
-
-    // Initial display
-    displayCalendar(currentYear);
-</script>
-</body>
-</html>
+print_full_calendar()
