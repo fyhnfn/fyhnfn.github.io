@@ -7,166 +7,205 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+        }
+        .calendar-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 20px;
-            background-color: #f4f4f4;
+            margin-top: 80px; /* Adjusted margin to prevent overlap */
         }
-        .calendar {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 20px;
+            background-color: #fff;
             padding: 10px;
-            background: #4CAF50;
-            color: white;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
         }
-        .header h2 {
+        .month {
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px;
+            width: 300px;
+        }
+        .day-range, .special-day {
+            font-weight: bold;
+            color: #00509E;
+        }
+        .special-day {
+            color: #FF5733;
+        }
+        .month h2 {
             margin: 0;
-            font-size: 20px;
-        }
-        .header button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
             font-size: 18px;
         }
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            border-bottom: 1px solid #ccc;
-        }
-        .day {
-            border: 1px solid #ccc;
-            height: 100px; /* Increased height for more space */
-            padding: 5px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: flex-start;
-        }
-        .day-header {
-            font-weight: bold;
-            text-align: center;
-            padding-bottom: 5px;
-        }
-        .event {
-            font-size: 12px;
-            background: #e7f1ff;
-            padding: 2px;
-            border-radius: 3px;
-            margin-top: 2px;
+        #print-button {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-<div class="calendar">
-    <div class="header">
-        <button id="prevYear">&#9664;&#9664;</button>
-        <button id="prevMonth">&#9664;</button>
-        <h2 id="monthYearDisplay"></h2>
-        <button id="nextMonth">&#9654;</button>
-        <button id="nextYear">&#9654;&#9654;</button>
+<div class="calendar-container">
+    <div class="controls">
+        <button id="prevYear">Previous Year</button>
+        <button id="nextYear">Next Year</button>
+        <button id="repeatYear">Skip to a Repeated Year</button>
+        <span id="yearDisplay"></span>
     </div>
-    <div class="days" id="daysContainer"></div>
+
+    <div id="calendar"></div>
+
+    <button id="print-button" onclick="printCalendar()">Print Calendar</button>
 </div>
 
 <script>
     const monthNames = [
-        "Primavera", "Restorare", "Fructalis"
+        { name: "Primavera", days: 37, specialDays: { 1: "New Year's Day" } },
+        { name: "Floralis", days: 38 },
+        { name: "Aestivalis", days: 37, specialDays: { 37: "Harvest Festival" } },
+        { name: "Restorare", days: 38 },
+        { name: "Revitalis", days: 37 },
+        { name: "Nutrientia", days: 38 },
+        { name: "Fructalis", days: 37 },
+        { name: "Recolere", days: 38 },
+        { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
     ];
 
-    const plantingSchedule = {
-        "2025-03-01": "Plant Wheat",
-        "2025-05-01": "Plant Clover",
-        "2025-08-01": "Plant Barley",
-        "2026-03-01": "Plant Corn",
-        "2026-05-01": "Plant Clover",
-        "2026-08-01": "Plant Wheat",
-        "2026-05-01": "Plant Barley",
-        "2027-03-01": "Plant Clover",
-        "2027-08-01": "Plant Corn",
-    };
+    // Function to dynamically calculate holiday dates based on agricultural year
+    function calculateHolidays(agriculturalYear, newYearDate) {
+        const holidays = {
+            Aestadies: new Date(newYearDate.getTime() + (1 - 1) * 24 * 60 * 60 * 1000), // 1st of Primavera
+            Aestasol: new Date(newYearDate.getTime() + (60 - 1) * 24 * 60 * 60 * 1000), // 60th day (Summer Solstice)
+            Hiemsol: new Date(newYearDate.getTime() + (182 - 1) * 24 * 60 * 60 * 1000), // 182nd day (Winter Solstice)
+            Philoson: new Date(newYearDate.getTime() + (119 - 1) * 24 * 60 * 60 * 1000), // 119th day (Autumn Equinox)
+            Anthoson: new Date(newYearDate.getTime() + (76 - 1) * 24 * 60 * 60 * 1000)  // 76th day (Spring Equinox)
+        };
+        return holidays;
+    }
 
-    let currentDate = new Date(2025, 0, 1); // Start from March of Year 1
+    // Store the calculated New Year's Day for each agricultural year
+    let newYearDates = [];
 
-    function displayCalendar() {
-        const monthYearDisplay = document.getElementById('monthYearDisplay');
-        const daysContainer = document.getElementById('daysContainer');
-        
-        const month = currentDate.getMonth();
-        const year = currentDate.getFullYear();
+    // Calculate the start date for each agricultural year dynamically
+    function calculateNewYearDates(startingYear) {
+        let previousEnd = new Date(2025, 2, 24); // March 25th, 2025 for Year 1
+        newYearDates = [new Date(previousEnd.getTime() + 24 * 60 * 60 * 1000)]; // New Year is the day after the previous year's end
 
-        monthYearDisplay.textContent = `${monthNames[month]} Year ${year}`;
-        daysContainer.innerHTML = '';
-
-        // Get first day of the month
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0); // Last day of the month
-        const totalDays = lastDay.getDate();
-        const startingDay = firstDay.getDay();
-
-        // Fill the days before the first day of the month
-        for (let i = 0; i < startingDay; i++) {
-            const emptyDay = document.createElement('div');
-            emptyDay.className = 'day';
-            daysContainer.appendChild(emptyDay);
-        }
-
-        // Fill the calendar with days
-        for (let day = 1; day <= totalDays; day++) {
-            const dayDiv = document.createElement('div');
-            dayDiv.className = 'day';
-            dayDiv.innerHTML = `<div class="day-header">${day}</div>`;
-            
-            // Format date for planting schedule
-            const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            if (plantingSchedule[formattedDate]) {
-                const eventDiv = document.createElement('div');
-                eventDiv.className = 'event';
-                eventDiv.textContent = plantingSchedule[formattedDate];
-                dayDiv.appendChild(eventDiv);
-            }
-            
-            daysContainer.appendChild(dayDiv);
+        for (let i = 1; i < startingYear; i++) {
+            let totalDays = monthNames.reduce((acc, month) => acc + month.days, 0);
+            previousEnd = new Date(previousEnd.getTime() + totalDays * 24 * 60 * 60 * 1000);
+            newYearDates.push(new Date(previousEnd.getTime() + 24 * 60 * 60 * 1000)); // New Year is the day after the previous year's end
         }
     }
 
-    // Event listeners for navigation buttons
-    document.getElementById('prevYear').addEventListener('click', () => {
-        currentDate.setFullYear(currentDate.getFullYear() - 1);
-        displayCalendar();
-    });
+    let currentYear = 1;
+
+    function displayCalendar(agriculturalYear) {
+        const calendarDiv = document.getElementById('calendar');
+        calendarDiv.innerHTML = '';
+        const yearDisplay = document.getElementById('yearDisplay');
+        const gregorianYear = 2025 + (agriculturalYear - 1);
+        yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
+
+        let newYearDate = newYearDates[agriculturalYear - 1];
+        const holidays = calculateHolidays(agriculturalYear, newYearDate); // Calculate the holidays for the current year
+
+        let totalDays = 0;
+        let gregorianDate = newYearDate; // Start from New Year's Day
+        let dayOfWeek = gregorianDate.getDay();
+
+        monthNames.forEach((month) => {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'month';
+
+            monthDiv.innerHTML = `<h2>${month.name} (Year ${agriculturalYear})</h2>`;
+
+            for (let day = 1; day <= month.days; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+
+                // Prepare output for the agricultural day
+                const agriculturalDay = `${day}th day of ${month.name}, Year ${agriculturalYear}`;
+                let gregorianStartDay = `${gregorianDate.getDate()}/${gregorianDate.getMonth() + 1}`;
+                let fullDayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek];
+
+                dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})`;
+
+                // Handle special days
+                if (month.specialDays && month.specialDays[day]) {
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
+                }
+
+                // Check for holidays
+                for (const holiday in holidays) {
+                    const holidayDate = holidays[holiday];
+                    if (holidayDate.getDate() === day && holidayDate.getMonth() === (monthNames.indexOf(month))) {
+                        dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${holiday} (Gregorian: ${gregorianStartDay}, ${fullDayOfWeek})</span>`;
+                    }
+                }
+
+                monthDiv.appendChild(dayDiv);
+
+                // Move to the next day
+                gregorianDate.setDate(gregorianDate.getDate() + 1); // Increment Gregorian date
+                dayOfWeek = (dayOfWeek + 1) % 7; // Update the day of the week
+            }
+
+            calendarDiv.appendChild(monthDiv);
+        });
+    }
+
+    // Identify repeated years based on New Year and leap year condition
+    function findNextRepeatedYear() {
+        const currentNewYearDate = newYearDates[currentYear - 1].toDateString();
+        for (let i = currentYear + 1; i <= 50; i++) { // Check up to 50 years ahead
+            const nextNewYearDate = newYearDates[i - 1].toDateString();
+            if (currentNewYearDate === nextNewYearDate && (newYearDates[i - 1].getMonth() === 1 && newYearDates[i - 1].getDate() === 29)) {
+                return i; // Return the next repeated year
+            }
+        }
+        return null; // No repeated year found within the range
+    }
 
     document.getElementById('nextYear').addEventListener('click', () => {
-        currentDate.setFullYear(currentDate.getFullYear() + 1);
-        displayCalendar();
+        currentYear++;
+        calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the next year
+        displayCalendar(currentYear);
     });
 
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        displayCalendar();
+    document.getElementById('prevYear').addEventListener('click', () => {
+        if (currentYear > 1) {
+            currentYear--;
+            calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the previous year
+            displayCalendar(currentYear);
+        }
     });
 
-    document.getElementById('nextMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        displayCalendar();
+    document.getElementById('repeatYear').addEventListener('click', () => {
+        const repeatedYear = findNextRepeatedYear();
+        if (repeatedYear) {
+            currentYear = repeatedYear;
+            calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the repeated year
+            displayCalendar(currentYear);
+        }
     });
 
-    // Initialize the calendar on page load
-    displayCalendar();
+    function printCalendar() {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Print Calendar</title></head><body>');
+        printWindow.document.write(document.getElementById('calendar').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+
+    // Initial setup
+    calculateNewYearDates(currentYear); // Calculate for Year 1
+    displayCalendar(currentYear);
 </script>
 
 </body>
