@@ -22,15 +22,12 @@
             border: 1px solid #333;
             padding: 15px;
             margin: 10px;
-            width: 300px;
+            width: 350px;
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .day-range, .special-day, .planting {
+        .special-day, .planting {
             font-weight: bold;
-            color: #00509E;
-        }
-        .special-day {
             color: #FF5733;
         }
         .month h2 {
@@ -61,11 +58,12 @@
 <script>
     const monthNames = [
         { name: "Primavera", days: 37 },
-        { name: "Restorae", days: 38 },
-        { name: "Fructalis", days: 37 },
         { name: "Floralis", days: 38 },
         { name: "Aestivalis", days: 37 },
+        { name: "Restorare", days: 38 },
+        { name: "Revitalis", days: 37 },
         { name: "Nutrientia", days: 38 },
+        { name: "Fructalis", days: 37 },
         { name: "Recolere", days: 38 },
         { name: "Hypoxis", days: 37 },
     ];
@@ -74,13 +72,13 @@
 
     const plantingCycle = [
         { month: "Primavera", crop: "Wheat" },
-        { month: "Restorae", crop: "Clover" },
+        { month: "Restorare", crop: "Clover" },
         { month: "Fructalis", crop: "Barley" },
         { month: "Primavera", crop: "Corn" },
-        { month: "Restorae", crop: "Clover" },
+        { month: "Restorare", crop: "Clover" },
         { month: "Fructalis", crop: "Wheat" },
-        { month: "Restorae", crop: "Barley" },
-        { month: "Restorae", crop: "Clover" },
+        { month: "Restorare", crop: "Barley" },
+        { month: "Restorare", crop: "Clover" },
         { month: "Fructalis", crop: "Corn" }
     ];
 
@@ -95,7 +93,15 @@
     }
 
     function getCurrentAgriculturalDate(year) {
-        return `1st of Primavera, Year ${year} (25th day of March, ${year})`;
+        return `1st of Primavera, Year ${year} (${getGregorianDate(year, 0, 0)})`;
+    }
+
+    function getGregorianDate(year, monthOffset, dayOffset) {
+        // Year starts on March 25
+        const startDate = new Date(year, 2, 25); // March is month 2 (0-indexed)
+        startDate.setMonth(startDate.getMonth() + monthOffset);
+        startDate.setDate(startDate.getDate() + dayOffset);
+        return startDate.toLocaleDateString();
     }
 
     function displayCalendar(year) {
@@ -106,31 +112,28 @@
         yearDisplay.innerText = `Agricultural Year: ${year}`;
         currentDateDisplay.innerText = `Current Date in Agricultural Calendar: ${getCurrentAgriculturalDate(year)}`;
 
-        const startDate = new Date(year, 2, 1); // March 1st of the agricultural year
         let plantingIndex = (year - 2025) % plantingCycle.length;
 
-        monthNames.forEach((month) => {
+        for (let monthIndex = 0; monthIndex < monthNames.length; monthIndex++) {
+            const month = monthNames[monthIndex];
             const monthDiv = document.createElement('div');
             monthDiv.className = 'month';
-            monthDiv.innerHTML = `<h2>${month.name} (${year})</h2>`;
+            monthDiv.innerHTML = `<h2>${month.name}, Year ${year}</h2>`;
 
             for (let day = 1; day <= month.days; day++) {
-                const eventDate = new Date(startDate);
-                eventDate.setDate(startDate.getDate() + (day - 1));
-
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'day';
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'day';
 
                 // Display planting event if it matches the planting schedule
                 if (day === 1) {
                     const { month: cropMonth, crop } = plantingCycle[plantingIndex];
-                    dayDiv.innerHTML = `<span class="special-day">${cropMonth}, Year ${year}: Plant ${crop} (${eventDate.toLocaleDateString()}) - ${eventDate.toLocaleString('en-US', { weekday: 'long' })}</span>`;
+                    eventDiv.innerHTML = `<span class="planting">${cropMonth}, Year ${year}: Plant ${crop} (${getGregorianDate(year, monthIndex, day - 1)})</span>`;
                     plantingIndex = (plantingIndex + 1) % plantingCycle.length; // Cycle through planting events
                 } else {
-                    dayDiv.innerText = `Day ${day}`;
+                    eventDiv.innerHTML = `Day ${day} (${getGregorianDate(year, monthIndex, day - 1)})`;
                 }
 
-                monthDiv.appendChild(dayDiv);
+                monthDiv.appendChild(eventDiv);
             }
 
             // Add special days
@@ -142,8 +145,7 @@
             monthDiv.innerHTML += `<p class="special-day">Anthoson: ${specialDays.anthoson} - ${new Date(year, 8, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
 
             calendarDiv.appendChild(monthDiv);
-            startDate.setMonth(startDate.getMonth() + 1); // Move to next month
-        });
+        }
     }
 
     document.getElementById('nextYear').addEventListener('click', () => {
