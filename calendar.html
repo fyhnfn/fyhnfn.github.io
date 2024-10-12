@@ -115,22 +115,23 @@
 
                 const agriculturalDay = `${day}th day of ${month.name}, Year ${agriculturalYear}`;
                 let gregorianStartDay = `${gregorianDay}/${gregorianMonth + 1}`;
-                
+                let dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][gregorianStart.getDay()];
+
+                dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay}, ${dayOfWeek})`;
+
+                // Handle special days
+                if (month.specialDays && month.specialDays[day]) {
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay}, ${dayOfWeek})</span>`;
+                }
+
+                monthDiv.appendChild(dayDiv);
+
                 gregorianDay++;
                 if (gregorianDay > gregorianMonthDays[gregorianMonth]) {
                     gregorianDay = 1;
                     gregorianMonth = (gregorianMonth + 1) % 12;
                     gregorianMonthDays = gregorianDaysInMonth(gregorianYear);
                 }
-
-                // Handle special days
-                if (month.specialDays && month.specialDays[day]) {
-                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay})</span>`;
-                } else {
-                    dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay})`;
-                }
-
-                monthDiv.appendChild(dayDiv);
             }
 
             calendarDiv.appendChild(monthDiv);
