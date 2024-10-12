@@ -1,109 +1,142 @@
-from datetime import datetime, timedelta
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .holiday {
+            color: red;
+            font-weight: bold;
+        }
+        .events {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
 
-# Define constants
-MONTHS = [
-    "Primavera",
-    "Floralis",
-    "Aestivalis",
-    "Restorare",
-    "Revitalis",
-    "Nutrientia",
-    "Fructalis",
-    "Recolere",
-    "Hypoxis"
-]
+<h1>Agricultural Calendar</h1>
 
-Holidays = {
-    "New Year": (1, "Primavera"),  # 1st of Primavera
-    "Harvest Festival": (37, "Aestivalis"),  # 37th of Aestavalis (New Year's Eve)
-    "Harvest Festival": (37, "Hypoxis"),  # 37th of Hypoxis (also New Year's Day)
-    "Ventus": (36, "Aestivalis"),
-    "Anemos": (36, "Hypoxis"),
-    "Prima Tritura": (28, "Aestivalis"),
-    "Secunda Tritura": (29, "Aestivalis"),
-    "Tertia Tritura": (30, "Aestivalis"),
-    "Quarta Tritura": (31, "Aestivalis"),
-    "Quinta Tritura": (32, "Aestivalis"),
-    "Sexta Tritura": (33, "Aestivalis"),
-    "Septima Tritura": (34, "Aestivalis"),
-    "Novissime Tritura": (35, "Aestivalis"),
-    "Prota Alonizo": (28, "Hypoxis"),
-    "Beta Alonizo": (29, "Hypoxis"),
-    "Gamma Alonizo": (30, "Hypoxis"),
-    "Delta Alonizo": (31, "Hypoxis"),
-    "Epsilon Alonizo": (32, "Hypoxis"),
-    "Zeta Alonizo": (33, "Hypoxis"),
-    "Theta Alonizo": (34, "Hypoxis"),
-    "Telonikos Alonizo": (35, "Hypoxis"),
-    "Aestadies": (1, "Floralis"),  # 1st of December
-    "Aestasol": (21, "Aestivalis"),  # 21st of December
-    "Hiemsol": (21, "Revitalis"),  # 21st of June
-    "Philoson": (21, "Nutrientia"),  # 21st of March
-    "Anthoson": (21, "Fructalis"),  # 21st of September
-}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Events</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Calendar entries will be inserted here -->
+        <script>
+            const MONTHS = [
+                "Primavera",
+                "Floralis",
+                "Aestivalis",
+                "Restorare",
+                "Revitalis",
+                "Nutrientia",
+                "Fructalis",
+                "Recolere",
+                "Hypoxis"
+            ];
 
-# Define the planting cycle
-planting_cycle = {
-    "Primavera": ["Wheat", "Corn"],
-    "Restorare": ["Clover"],
-    "Fructalis": ["Barley", "Wheat", "Corn"]
-}
+            const Holidays = {
+                "New Year": [1, "Primavera"],  // 1st of Primavera
+                "Harvest Festival": [37, "Aestivalis"],  // 37th of Aestavalis (New Year's Eve)
+                "Harvest Festival": [37, "Hypoxis"],  // 37th of Hypoxis (also New Year's Day)
+                "Ventus": [36, "Aestivalis"],
+                "Anemos": [36, "Hypoxis"],
+                "Prima Tritura": [28, "Aestivalis"],
+                "Secunda Tritura": [29, "Aestivalis"],
+                "Tertia Tritura": [30, "Aestivalis"],
+                "Quarta Tritura": [31, "Aestivalis"],
+                "Quinta Tritura": [32, "Aestivalis"],
+                "Sexta Tritura": [33, "Aestivalis"],
+                "Septima Tritura": [34, "Aestivalis"],
+                "Novissime Tritura": [35, "Aestivalis"],
+                "Prota Alonizo": [28, "Hypoxis"],
+                "Beta Alonizo": [29, "Hypoxis"],
+                "Gamma Alonizo": [30, "Hypoxis"],
+                "Delta Alonizo": [31, "Hypoxis"],
+                "Epsilon Alonizo": [32, "Hypoxis"],
+                "Zeta Alonizo": [33, "Hypoxis"],
+                "Theta Alonizo": [34, "Hypoxis"],
+                "Telonikos Alonizo": [35, "Hypoxis"],
+                "Aestadies": [1, "Floralis"],  // 1st of December
+                "Aestasol": [21, "Aestivalis"],  // 21st of December
+                "Hiemsol": [21, "Revitalis"],  // 21st of June
+                "Philoson": [21, "Nutrientia"],  // 21st of March
+                "Anthoson": [21, "Fructalis"],  // 21st of September
+            };
 
-# Get the current agricultural year and Gregorian date
-def get_agricultural_date(agricultural_year, current_day):
-    start_date = datetime(2025, 3, 25)  # 25th of March 2025 is the start of Year 1
-    agricultural_date = start_date + timedelta(days=current_day - 1)
-    return agricultural_date
+            function getDaySuffix(day) {
+                if (10 <= day % 100 && day % 100 <= 20) return "th";
+                return {1: "st", 2: "nd", 3: "rd"}[day % 10] || "th";
+            }
 
-# Generate a full calendar
-def generate_full_calendar():
-    days_in_month = [37, 30, 37, 37, 37, 37, 37, 37, 37]  # Days in each month
-    current_day = 0
-    calendar = []
+            function generateFullCalendar() {
+                const calendarRows = [];
+                let currentDay = 0;
+                const daysInMonth = [37, 30, 37, 37, 37, 37, 37, 37, 37]; // Days in each month
 
-    for year in range(-1, 10):  # Adjust this range to include more years
-        for month_index, month in enumerate(MONTHS):
-            for day in range(1, days_in_month[month_index] + 1):
-                current_day += 1
-                # Calculate the Gregorian date
-                agricultural_date = get_agricultural_date(year + 1, current_day)
-                day_name = agricultural_date.strftime("%A")
-                events_today = get_events(month, day)
-                
-                # Format the date string
-                formatted_date = f"{day}th day of {month}, Year {year + 1} ({day_name}, the {day}{get_day_suffix(day)} day of {agricultural_date.year})"
-                calendar.append((formatted_date, events_today))
-    
-    return calendar
+                for (let year = -1; year < 10; year++) {  // Adjust this range to include more years
+                    for (let monthIndex = 0; monthIndex < MONTHS.length; monthIndex++) {
+                        const month = MONTHS[monthIndex];
+                        for (let day = 1; day <= daysInMonth[monthIndex]; day++) {
+                            currentDay++;
+                            const agriculturalDate = new Date(2025, 2, 25); // 25th of March 2025
+                            agriculturalDate.setDate(agriculturalDate.getDate() + currentDay - 1);
+                            const dayName = agriculturalDate.toLocaleDateString('en-US', { weekday: 'long' });
+                            const dateSuffix = getDaySuffix(day);
+                            const formattedDate = `The ${day}${dateSuffix} day of ${month}, Year ${year + 1} (${dayName}, the ${day}${dateSuffix} day of ${agriculturalDate.getFullYear()})`;
+                            
+                            // Determine events for the day
+                            const eventsToday = [];
+                            for (const [eventName, [eventDay, eventMonth]] of Object.entries(Holidays)) {
+                                if (eventMonth === month && eventDay === day) {
+                                    eventsToday.push(`<span class="holiday">${eventName}</span>`);
+                                }
+                            }
+                            if (month === "Primavera" && day === 1) {  // New Year
+                                eventsToday.push(`<span class="holiday">New Year</span>`);
+                            }
+                            const eventsDisplay = eventsToday.length > 0 ? eventsToday.join(', ') : 'No Events';
+                            
+                            calendarRows.push(`<tr><td>${formattedDate}</td><td class="events">${eventsDisplay}</td></tr>`);
+                        }
+                    }
+                }
 
-def get_day_suffix(day):
-    """Returns the suffix for the day (st, nd, rd, th)."""
-    if 10 <= day % 100 <= 20:
-        return "th"
-    else:
-        return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+                return calendarRows.join("");
+            }
 
-# Get events for a given date
-def get_events(month, day):
-    events = []
-    for event_name, (event_day, event_month) in Holidays.items():
-        if event_month == month and event_day == day:
-            events.append(event_name)
-    if month == "Primavera" and day == 1:  # New Year
-        events.append("New Year")
-    return events
+            document.querySelector("tbody").innerHTML = generateFullCalendar();
+        </script>
+    </tbody>
+</table>
 
-# Print the full calendar
-def print_full_calendar():
-    full_calendar = generate_full_calendar()
-    for date_info in full_calendar:
-        date_string, events_today = date_info
-        events_display = ", ".join(events_today) if events_today else "No Events"
-        # Bold red for festival dates
-        for event in events_today:
-            if event in Holidays:
-                day, month = Holidays[event]
-                date_string = date_string.replace(f"{day}th day of {month},", f"\033[1;31m{day}th day of {month},\033[0m")  # Make it bold and red
-        print(f"{date_string}: {events_display}")
-
-print_full_calendar()
+</body>
+</html>
