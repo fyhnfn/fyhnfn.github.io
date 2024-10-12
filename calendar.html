@@ -45,6 +45,7 @@
     <div class="controls">
         <button id="prevYear">Previous Year</button>
         <button id="nextYear">Next Year</button>
+        <button id="repeatYear">Skip to a Repeated Year</button>
         <span id="yearDisplay"></span>
     </div>
 
@@ -69,6 +70,12 @@
     // This will store the calculated New Year's Day for each agricultural year
     let newYearDates = [];
 
+    // Gregorian month lengths including leap year logic
+    const gregorianDaysInMonth = (year) => [
+        31, (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0) ? 29 : 28, 
+        31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+    ];
+
     // Calculate the start date for each agricultural year dynamically
     function calculateNewYearDates(startingYear) {
         let previousEnd = new Date(2025, 2, 25); // March 25th, 2025 for Year 1
@@ -80,8 +87,6 @@
             newYearDates.push(new Date(previousEnd.getTime() + 24 * 60 * 60 * 1000)); // New Year is the day after the previous year's end
         }
     }
-
-    const daysInGregorianMonth = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28]; // Gregorian months starting in March
 
     let currentYear = 1;
 
@@ -96,6 +101,7 @@
         const gregorianStart = newYearDates[agriculturalYear - 1];
         let gregorianDay = gregorianStart.getDate();
         let gregorianMonth = gregorianStart.getMonth();
+        let gregorianMonthDays = gregorianDaysInMonth(gregorianYear);
 
         monthNames.forEach((month, index) => {
             const monthDiv = document.createElement('div');
@@ -111,14 +117,15 @@
                 let gregorianStartDay = `${gregorianDay}/${gregorianMonth + 1}`;
                 
                 gregorianDay++;
-                if (gregorianDay > daysInGregorianMonth[gregorianMonth]) {
+                if (gregorianDay > gregorianMonthDays[gregorianMonth]) {
                     gregorianDay = 1;
                     gregorianMonth = (gregorianMonth + 1) % 12;
+                    gregorianMonthDays = gregorianDaysInMonth(gregorianYear);
                 }
 
                 // Handle special days
                 if (month.specialDays && month.specialDays[day]) {
-                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]}</span>`;
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay})</span>`;
                 } else {
                     dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay})`;
                 }
@@ -139,6 +146,13 @@
     document.getElementById('prevYear').addEventListener('click', () => {
         currentYear--;
         calculateNewYearDates(currentYear); // Recalculate for the previous year
+        displayCalendar(currentYear);
+    });
+
+    document.getElementById('repeatYear').addEventListener('click', () => {
+        const repeatCycle = 7; // Example repeat cycle of 7 years
+        currentYear = (currentYear % repeatCycle === 0) ? currentYear : currentYear + (repeatCycle - (currentYear % repeatCycle));
+        calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the repeated year
         displayCalendar(currentYear);
     });
 
