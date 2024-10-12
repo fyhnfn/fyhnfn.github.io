@@ -61,32 +61,28 @@
 <script>
     const monthNames = [
         { name: "Primavera", days: 37 },
+        { name: "Restorae", days: 38 },
+        { name: "Fructalis", days: 37 },
         { name: "Floralis", days: 38 },
         { name: "Aestivalis", days: 37 },
-        { name: "Restorare", days: 38 },
-        { name: "Revitalis", days: 37 },
         { name: "Nutrientia", days: 38 },
-        { name: "Fructalis", days: 37 },
         { name: "Recolere", days: 38 },
         { name: "Hypoxis", days: 37 },
     ];
 
     let currentYear = 2025;
 
-    function getPlantingCycle(year) {
-        const cycle = [
-            { month: "Primavera", crop: "Wheat" },
-            { month: "Restorare", crop: "Clover" },
-            { month: "Fructalis", crop: "Barley" },
-            { month: "Primavera", crop: "Corn" },
-            { month: "Restorare", crop: "Clover" },
-            { month: "Fructalis", crop: "Wheat" },
-            { month: "Restorare", crop: "Barley" },
-            { month: "Restorare", crop: "Clover" },
-            { month: "Fructalis", crop: "Corn" }
-        ];
-        return cycle[(year - 2025) % cycle.length];
-    }
+    const plantingCycle = [
+        { month: "Primavera", crop: "Wheat" },
+        { month: "Restorae", crop: "Clover" },
+        { month: "Fructalis", crop: "Barley" },
+        { month: "Primavera", crop: "Corn" },
+        { month: "Restorae", crop: "Clover" },
+        { month: "Fructalis", crop: "Wheat" },
+        { month: "Restorae", crop: "Barley" },
+        { month: "Restorae", crop: "Clover" },
+        { month: "Fructalis", crop: "Corn" }
+    ];
 
     function getSpecialDays(year) {
         return {
@@ -95,30 +91,11 @@
             hiemsol: `${year} - 21st of June`,
             philoson: `${year} - 21st of March`,
             anthoson: `${year} - 21st of September`,
-            harvestFestival: `${year} - 37th of Aestivalis (New Year's Day)`,
-            ventus: `${year} - 36th of Aestivalis`,
-            anemos: `${year} - 36th of Hypoxis`,
-            primaTritura: `${year} - 28th of Aestivalis`,
-            secundaTritura: `${year} - 29th of Aestivalis`,
-            tertiaTritura: `${year} - 30th of Aestivalis`,
-            quartaTritura: `${year} - 31st of Aestivalis`,
-            quintaTritura: `${year} - 32nd of Aestivalis`,
-            sextaTritura: `${year} - 33rd of Aestivalis`,
-            septimaTritura: `${year} - 34th of Aestivalis`,
-            novissimeTritura: `${year} - 35th of Aestivalis`,
-            protaAlonizo: `${year} - 28th of Hypoxis`,
-            betaAlonizo: `${year} - 29th of Hypoxis`,
-            gammaAlonizo: `${year} - 30th of Hypoxis`,
-            deltaAlonizo: `${year} - 31st of Hypoxis`,
-            epsilonAlonizo: `${year} - 32nd of Hypoxis`,
-            zetaAlonizo: `${year} - 33rd of Hypoxis`,
-            thetaAlonizo: `${year} - 34th of Hypoxis`,
-            telonikosAlonizo: `${year} - 35th of Hypoxis`
         };
     }
 
     function getCurrentAgriculturalDate(year) {
-        return `1st of Primavera, Year ${year}`;
+        return `1st of Primavera, Year ${year} (25th day of March, ${year})`;
     }
 
     function displayCalendar(year) {
@@ -129,24 +106,26 @@
         yearDisplay.innerText = `Agricultural Year: ${year}`;
         currentDateDisplay.innerText = `Current Date in Agricultural Calendar: ${getCurrentAgriculturalDate(year)}`;
 
+        const startDate = new Date(year, 2, 1); // March 1st of the agricultural year
+        let plantingIndex = (year - 2025) % plantingCycle.length;
+
         monthNames.forEach((month) => {
             const monthDiv = document.createElement('div');
             monthDiv.className = 'month';
             monthDiv.innerHTML = `<h2>${month.name} (${year})</h2>`;
 
-            // Display special days
             for (let day = 1; day <= month.days; day++) {
+                const eventDate = new Date(startDate);
+                eventDate.setDate(startDate.getDate() + (day - 1));
+
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
 
-                if (day === 1 && month.name === "Primavera") {
-                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Wheat</strong></span>`;
-                } else if (day === 1 && month.name === "Restorare") {
-                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Clover</strong></span>`;
-                } else if (day === 1 && month.name === "Fructalis") {
-                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Barley</strong></span>`;
-                } else if (day === 1 && month.name === "Primavera" && month.name !== "Restorare" && month.name !== "Fructalis") {
-                    dayDiv.innerHTML = `<span class="special-day">Plant <strong>Corn</strong></span>`;
+                // Display planting event if it matches the planting schedule
+                if (day === 1) {
+                    const { month: cropMonth, crop } = plantingCycle[plantingIndex];
+                    dayDiv.innerHTML = `<span class="special-day">${cropMonth}, Year ${year}: Plant ${crop} (${eventDate.toLocaleDateString()}) - ${eventDate.toLocaleString('en-US', { weekday: 'long' })}</span>`;
+                    plantingIndex = (plantingIndex + 1) % plantingCycle.length; // Cycle through planting events
                 } else {
                     dayDiv.innerText = `Day ${day}`;
                 }
@@ -156,13 +135,14 @@
 
             // Add special days
             const specialDays = getSpecialDays(year);
-            monthDiv.innerHTML += `<p class="special-day">Aestadies: ${specialDays.aestadies}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Aestasol: ${specialDays.aestasol}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Hiemsol: ${specialDays.hiemsol}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Philoson: ${specialDays.philoson}</p>`;
-            monthDiv.innerHTML += `<p class="special-day">Anthoson: ${specialDays.anthoson}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Aestadies: ${specialDays.aestadies} - ${new Date(year, 11, 1).toLocaleString('en-US', { weekday: 'long' })}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Aestasol: ${specialDays.aestasol} - ${new Date(year, 11, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Hiemsol: ${specialDays.hiemsol} - ${new Date(year, 5, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Philoson: ${specialDays.philoson} - ${new Date(year, 2, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
+            monthDiv.innerHTML += `<p class="special-day">Anthoson: ${specialDays.anthoson} - ${new Date(year, 8, 21).toLocaleString('en-US', { weekday: 'long' })}</p>`;
 
             calendarDiv.appendChild(monthDiv);
+            startDate.setMonth(startDate.getMonth() + 1); // Move to next month
         });
     }
 
