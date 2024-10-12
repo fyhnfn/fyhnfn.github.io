@@ -17,7 +17,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 0 auto;
+            margin: 20px auto;
         }
         th, td {
             border: 1px solid #ccc;
@@ -35,11 +35,32 @@
         .events {
             font-style: italic;
         }
+        .season {
+            background-color: #e9ecef;
+            font-weight: bold;
+            text-align: center;
+        }
+        .button-container {
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
 <h1>Agricultural Calendar</h1>
+
+<div class="button-container">
+    <button onclick="previousYear()">Previous Year</button>
+    <button onclick="nextYear()">Next Year</button>
+    <button onclick="printCalendar()">Print Calendar</button>
+</div>
 
 <table>
     <thead>
@@ -48,95 +69,125 @@
             <th>Events</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="calendar-body">
         <!-- Calendar entries will be inserted here -->
-        <script>
-            const MONTHS = [
-                "Primavera",
-                "Floralis",
-                "Aestivalis",
-                "Restorare",
-                "Revitalis",
-                "Nutrientia",
-                "Fructalis",
-                "Recolere",
-                "Hypoxis"
-            ];
-
-            const Holidays = {
-                "New Year": [1, "Primavera"],  // 1st of Primavera
-                "Harvest Festival": [37, "Aestivalis"],  // 37th of Aestavalis (New Year's Eve)
-                "Harvest Festival": [37, "Hypoxis"],  // 37th of Hypoxis (also New Year's Day)
-                "Ventus": [36, "Aestivalis"],
-                "Anemos": [36, "Hypoxis"],
-                "Prima Tritura": [28, "Aestivalis"],
-                "Secunda Tritura": [29, "Aestivalis"],
-                "Tertia Tritura": [30, "Aestivalis"],
-                "Quarta Tritura": [31, "Aestivalis"],
-                "Quinta Tritura": [32, "Aestivalis"],
-                "Sexta Tritura": [33, "Aestivalis"],
-                "Septima Tritura": [34, "Aestivalis"],
-                "Novissime Tritura": [35, "Aestivalis"],
-                "Prota Alonizo": [28, "Hypoxis"],
-                "Beta Alonizo": [29, "Hypoxis"],
-                "Gamma Alonizo": [30, "Hypoxis"],
-                "Delta Alonizo": [31, "Hypoxis"],
-                "Epsilon Alonizo": [32, "Hypoxis"],
-                "Zeta Alonizo": [33, "Hypoxis"],
-                "Theta Alonizo": [34, "Hypoxis"],
-                "Telonikos Alonizo": [35, "Hypoxis"],
-                "Aestadies": [1, "Floralis"],  // 1st of December
-                "Aestasol": [21, "Aestivalis"],  // 21st of December
-                "Hiemsol": [21, "Revitalis"],  // 21st of June
-                "Philoson": [21, "Nutrientia"],  // 21st of March
-                "Anthoson": [21, "Fructalis"],  // 21st of September
-            };
-
-            function getDaySuffix(day) {
-                if (10 <= day % 100 && day % 100 <= 20) return "th";
-                return {1: "st", 2: "nd", 3: "rd"}[day % 10] || "th";
-            }
-
-            function generateFullCalendar() {
-                const calendarRows = [];
-                let currentDay = 0;
-                const daysInMonth = [37, 30, 37, 37, 37, 37, 37, 37, 37]; // Days in each month
-
-                for (let year = -1; year < 10; year++) {  // Adjust this range to include more years
-                    for (let monthIndex = 0; monthIndex < MONTHS.length; monthIndex++) {
-                        const month = MONTHS[monthIndex];
-                        for (let day = 1; day <= daysInMonth[monthIndex]; day++) {
-                            currentDay++;
-                            const agriculturalDate = new Date(2025, 2, 25); // 25th of March 2025
-                            agriculturalDate.setDate(agriculturalDate.getDate() + currentDay - 1);
-                            const dayName = agriculturalDate.toLocaleDateString('en-US', { weekday: 'long' });
-                            const dateSuffix = getDaySuffix(day);
-                            const formattedDate = `The ${day}${dateSuffix} day of ${month}, Year ${year + 1} (${dayName}, the ${day}${dateSuffix} day of ${agriculturalDate.getFullYear()})`;
-                            
-                            // Determine events for the day
-                            const eventsToday = [];
-                            for (const [eventName, [eventDay, eventMonth]] of Object.entries(Holidays)) {
-                                if (eventMonth === month && eventDay === day) {
-                                    eventsToday.push(`<span class="holiday">${eventName}</span>`);
-                                }
-                            }
-                            if (month === "Primavera" && day === 1) {  // New Year
-                                eventsToday.push(`<span class="holiday">New Year</span>`);
-                            }
-                            const eventsDisplay = eventsToday.length > 0 ? eventsToday.join(', ') : 'No Events';
-                            
-                            calendarRows.push(`<tr><td>${formattedDate}</td><td class="events">${eventsDisplay}</td></tr>`);
-                        }
-                    }
-                }
-
-                return calendarRows.join("");
-            }
-
-            document.querySelector("tbody").innerHTML = generateFullCalendar();
-        </script>
     </tbody>
 </table>
+
+<script>
+    let currentYear = 1; // Start from Year 1
+
+    const MONTHS = [
+        "Primavera",
+        "Floralis",
+        "Aestivalis",
+        "Restorare",
+        "Revitalis",
+        "Nutrientia",
+        "Fructalis",
+        "Recolere",
+        "Hypoxis"
+    ];
+
+    const Holidays = {
+        "New Year": [1, "Primavera"],  // 1st of Primavera
+        "Harvest Festival": [37, "Aestivalis"],  // 37th of Aestavalis (New Year's Eve)
+        "Harvest Festival": [37, "Hypoxis"],  // 37th of Hypoxis (also New Year's Day)
+        "Ventus": [36, "Aestivalis"],
+        "Anemos": [36, "Hypoxis"],
+        "Prima Tritura": [28, "Aestivalis"],
+        "Secunda Tritura": [29, "Aestivalis"],
+        "Tertia Tritura": [30, "Aestivalis"],
+        "Quarta Tritura": [31, "Aestivalis"],
+        "Quinta Tritura": [32, "Aestivalis"],
+        "Sexta Tritura": [33, "Aestivalis"],
+        "Septima Tritura": [34, "Aestivalis"],
+        "Novissime Tritura": [35, "Aestivalis"],
+        "Prota Alonizo": [28, "Hypoxis"],
+        "Beta Alonizo": [29, "Hypoxis"],
+        "Gamma Alonizo": [30, "Hypoxis"],
+        "Delta Alonizo": [31, "Hypoxis"],
+        "Epsilon Alonizo": [32, "Hypoxis"],
+        "Zeta Alonizo": [33, "Hypoxis"],
+        "Theta Alonizo": [34, "Hypoxis"],
+        "Telonikos Alonizo": [35, "Hypoxis"],
+        "Aestadies": [1, "Floralis"],  // 1st of December
+        "Aestasol": [21, "Aestivalis"],  // 21st of December
+        "Hiemsol": [21, "Revitalis"],  // 21st of June
+        "Philoson": [21, "Nutrientia"],  // 21st of March
+        "Anthoson": [21, "Fructalis"],  // 21st of September
+    };
+
+    function getDaySuffix(day) {
+        if (10 <= day % 100 && day % 100 <= 20) return "th";
+        return {1: "st", 2: "nd", 3: "rd"}[day % 10] || "th";
+    }
+
+    function generateFullCalendar() {
+        const calendarRows = [];
+        let currentDay = 0;
+        const daysInMonth = [37, 30, 37, 37, 37, 37, 37, 37, 37]; // Days in each month
+
+        for (let year = currentYear - 1; year < currentYear; year++) {
+            for (let monthIndex = 0; monthIndex < MONTHS.length; monthIndex++) {
+                const month = MONTHS[monthIndex];
+                
+                // Insert season header
+                if (monthIndex === 0) {
+                    calendarRows.push(`<tr><td colspan="2" class="season">Spring</td></tr>`);
+                } else if (monthIndex === 2) {
+                    calendarRows.push(`<tr><td colspan="2" class="season">Summer</td></tr>`);
+                } else if (monthIndex === 4) {
+                    calendarRows.push(`<tr><td colspan="2" class="season">Fall</td></tr>`);
+                } else if (monthIndex === 6) {
+                    calendarRows.push(`<tr><td colspan="2" class="season">Winter</td></tr>`);
+                }
+                
+                for (let day = 1; day <= daysInMonth[monthIndex]; day++) {
+                    currentDay++;
+                    const agriculturalDate = new Date(2025, 2, 25); // 25th of March 2025
+                    agriculturalDate.setDate(agriculturalDate.getDate() + currentDay - 1);
+                    const dayName = agriculturalDate.toLocaleDateString('en-US', { weekday: 'long' });
+                    const dateSuffix = getDaySuffix(day);
+                    const formattedDate = `The ${day}${dateSuffix} day of ${month}, Year ${year + 1} (${dayName}, the ${day}${dateSuffix} day of ${agriculturalDate.getFullYear()})`;
+                    
+                    // Determine events for the day
+                    const eventsToday = [];
+                    for (const [eventName, [eventDay, eventMonth]] of Object.entries(Holidays)) {
+                        if (eventMonth === month && eventDay === day) {
+                            eventsToday.push(`<span class="holiday">${eventName}</span>`);
+                        }
+                    }
+                    if (month === "Primavera" && day === 1) {  // New Year
+                        eventsToday.push(`<span class="holiday">New Year</span>`);
+                    }
+                    const eventsDisplay = eventsToday.length > 0 ? eventsToday.join(', ') : 'No Events';
+                    
+                    calendarRows.push(`<tr><td>${formattedDate}</td><td class="events">${eventsDisplay}</td></tr>`);
+                }
+            }
+        }
+
+        document.getElementById("calendar-body").innerHTML = calendarRows.join("");
+    }
+
+    function nextYear() {
+        currentYear++;
+        generateFullCalendar();
+    }
+
+    function previousYear() {
+        currentYear--;
+        generateFullCalendar();
+    }
+
+    function printCalendar() {
+        window.print();
+    }
+
+    // Initial calendar generation
+    generateFullCalendar();
+</script>
 
 </body>
 </html>
