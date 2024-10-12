@@ -67,7 +67,7 @@
         { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
     ];
 
-    // This will store the calculated New Year's Day for each agricultural year
+    // Store the calculated New Year's Day for each agricultural year
     let newYearDates = [];
 
     // Gregorian month lengths including leap year logic
@@ -137,6 +137,18 @@
         });
     }
 
+    // Identify repeated years based on New Year and leap year condition
+    function findNextRepeatedYear() {
+        const currentNewYearDate = newYearDates[currentYear - 1].toDateString();
+        for (let i = currentYear + 1; i <= 50; i++) { // Check up to 50 years ahead
+            const nextNewYearDate = newYearDates[i - 1].toDateString();
+            if (currentNewYearDate === nextNewYearDate && (newYearDates[i - 1].getMonth() === 1 && newYearDates[i - 1].getDate() === 29)) {
+                return i; // Return the next repeated year
+            }
+        }
+        return null; // No repeated year found within the range
+    }
+
     document.getElementById('nextYear').addEventListener('click', () => {
         currentYear++;
         calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the next year
@@ -144,16 +156,22 @@
     });
 
     document.getElementById('prevYear').addEventListener('click', () => {
-        currentYear--;
-        calculateNewYearDates(currentYear); // Recalculate for the previous year
-        displayCalendar(currentYear);
+        if (currentYear > 1) {
+            currentYear--;
+            calculateNewYearDates(currentYear); // Recalculate for the previous year
+            displayCalendar(currentYear);
+        }
     });
 
     document.getElementById('repeatYear').addEventListener('click', () => {
-        const repeatCycle = 7; // Example repeat cycle of 7 years
-        currentYear = (currentYear % repeatCycle === 0) ? currentYear : currentYear + (repeatCycle - (currentYear % repeatCycle));
-        calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the repeated year
-        displayCalendar(currentYear);
+        const repeatedYear = findNextRepeatedYear();
+        if (repeatedYear) {
+            currentYear = repeatedYear;
+            calculateNewYearDates(currentYear); // Recalculate the New Year's Day for the repeated year
+            displayCalendar(currentYear);
+        } else {
+            alert("No repeated year found within the next 50 years.");
+        }
     });
 
     // Initial calculation and display for the first year
