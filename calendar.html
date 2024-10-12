@@ -79,7 +79,7 @@
     // Calculate the start date for each agricultural year dynamically
     function calculateNewYearDates(startingYear) {
         let previousEnd = new Date(2025, 2, 25); // March 25th, 2025 for Year 1
-        newYearDates = [previousEnd];
+        newYearDates = [new Date(previousEnd.getTime() + 24 * 60 * 60 * 1000)]; // New Year is the day after the previous year's end
 
         for (let i = 1; i < startingYear; i++) {
             let totalDays = monthNames.reduce((acc, month) => acc + month.days, 0);
