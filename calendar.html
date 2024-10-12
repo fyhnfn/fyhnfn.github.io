@@ -58,50 +58,43 @@
         { name: "Primavera", days: 37, specialDays: { 1: "New Year's Day" } },
         { name: "Floralis", days: 38 },
         { name: "Aestivalis", days: 37, specialDays: { 37: "Harvest Festival" } },
-        { name: "Restorare", days: 38 },
+        { name: "Restorare", days: 38, specialDays: {} },
         { name: "Revitalis", days: 37 },
         { name: "Nutrientia", days: 38, specialDays: {} },
         { name: "Fructalis", days: 37 },
-        { name: "Recolere", days: 38 },
+        { name: "Recolere", days: 38, specialDays: {} },
         { name: "Hypoxis", days: 37, specialDays: { 37: "New Year's Eve" } },
     ];
 
     const gregorianStart = new Date(2025, 2, 25); // March 25th, 2025
+    const daysInGregorianMonth = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28]; // Gregorian months starting in March
 
-    function isLeapYear(year) {
-        return ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0);
-    }
+    let currentYear = 1;
 
-    function getGregorianMonthDays(month, year) {
-        const daysInMonth = [31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31];
-        if (month === 11) return isLeapYear(year) ? 29 : 28; // February
-        return daysInMonth[month % 12];
-    }
-
-    let currentYear = 2025;
-
-    function getSolsticeEquinoxDates(year) {
-        return {
-            aestadies: new Date(year, 11, 1), // 1st December
-            aestasol: new Date(year, 11, 21), // Summer Solstice (approx. 21st December)
-            hiemsol: new Date(year, 5, 21),   // Winter Solstice (approx. 21st June)
-            philoson: new Date(year, 2, 21),  // Autumn Equinox (approx. 21st March)
-            anthoson: new Date(year, 8, 23)   // Spring Equinox (approx. 23rd September)
+    function getSolsticeEquinoxDates(agriculturalYear) {
+        const gregorianYear = 2025 + (agriculturalYear - 1);
+        const dates = {
+            aestadies: new Date(gregorianYear, 11, 1), // 1st December
+            aestasol: new Date(gregorianYear, 11, 21), // Summer Solstice (approx. 21st December)
+            hiemsol: new Date(gregorianYear, 5, 21),   // Winter Solstice (approx. 21st June)
+            philoson: new Date(gregorianYear, 2, 21),  // Autumn Equinox (approx. 21st March)
+            anthoson: new Date(gregorianYear, 8, 23)   // Spring Equinox (approx. 23rd September)
         };
+        return dates;
     }
 
-    function displayCalendar(year) {
+    function displayCalendar(agriculturalYear) {
         const calendarDiv = document.getElementById('calendar');
         calendarDiv.innerHTML = '';
         const yearDisplay = document.getElementById('yearDisplay');
-        yearDisplay.innerText = `Agricultural Year: ${year}, Gregorian Year: ${gregorianStart.getFullYear()}`;
+        const gregorianYear = 2025 + (agriculturalYear - 1);
+        yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
 
         let totalDays = 0;
         let gregorianDay = gregorianStart.getDate();
         let gregorianMonth = gregorianStart.getMonth();
-        let gregorianYear = gregorianStart.getFullYear();
 
-        const solsticeEquinoxDates = getSolsticeEquinoxDates(year);
+        const solsticeEquinoxDates = getSolsticeEquinoxDates(agriculturalYear);
 
         monthNames.forEach((month, index) => {
             const monthDiv = document.createElement('div');
@@ -111,33 +104,38 @@
             const endDay = totalDays + month.days;
             totalDays = endDay;
 
-            let gregorianStartDay = `${gregorianDay}/${gregorianMonth + 1}/${gregorianYear}`;
+            let gregorianStartDay = `${gregorianDay}/${gregorianMonth + 1}`;
             gregorianDay += month.days;
-
-            while (gregorianDay > getGregorianMonthDays(gregorianMonth, gregorianYear)) {
-                gregorianDay -= getGregorianMonthDays(gregorianMonth, gregorianYear);
-                gregorianMonth++;
-                if (gregorianMonth > 11) {
-                    gregorianMonth = 0;
-                    gregorianYear++;
-                }
+            while (gregorianDay > daysInGregorianMonth[gregorianMonth]) {
+                gregorianDay -= daysInGregorianMonth[gregorianMonth];
+                gregorianMonth = (gregorianMonth + 1) % 12;
             }
-            let gregorianEndDay = `${gregorianDay}/${gregorianMonth + 1}/${gregorianYear}`;
+            let gregorianEndDay = `${gregorianDay}/${gregorianMonth + 1}`;
 
             monthDiv.innerHTML = `
-                <h2>${month.name} (${year})</h2>
+                <h2>${month.name} (Agricultural Year ${agriculturalYear})</h2>
                 <p class="day-range">Day ${startDay} - Day ${endDay}</p>
                 <p>Gregorian: ${gregorianStartDay} - ${gregorianEndDay}</p>
             `;
 
-            // Display special days
+            // Display special days with Agricultural year format
             for (let day = 1; day <= month.days; day++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
+                const agriculturalDay = startDay + day - 1;
 
-                // Display changing special days
                 if (month.specialDays && month.specialDays[day]) {
-                    dayDiv.innerHTML = `<span class="special-day">Day ${startDay + day - 1}: ${month.specialDays[day]}</span>`;
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}th day of ${month.name}, Year ${agriculturalYear}: ${month.specialDays[day]}</span>`;
+                } else if (month.name === "Restorare" && day === 1) {
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}th day of Restorare, Year ${agriculturalYear}: Aestadies (1st of December)</span>`;
+                } else if (month.name === "Restorare" && day === 18) {
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}th day of Restorare, Year ${agriculturalYear}: Aestasol (Summer Solstice)</span>`;
+                } else if (month.name === "Nutrientia" && day === 1) {
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}th day of Nutrientia, Year ${agriculturalYear}: Philoson (Autumn Equinox)</span>`;
+                } else if (month.name === "Recolere" && day === 18) {
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}th day of Recolere, Year ${agriculturalYear}: Hiemsol (Winter Solstice)</span>`;
+                } else {
+                    dayDiv.innerText = `Day ${agriculturalDay}`;
                 }
 
                 monthDiv.appendChild(dayDiv);
