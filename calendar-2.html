@@ -43,7 +43,7 @@
             font-size: 18px;
         }
         .day {
-            line-height: 1.75; /* Set line spacing between each day */
+            margin: 10px 0; /* Adjust margin for spacing between dates */
         }
         #print-button {
             margin-top: 20px;
@@ -181,7 +181,7 @@
         const currentNewYearDate = newYearDates[currentYear - 1].toDateString();
         for (let i = currentYear + 1; i <= 50; i++) { // Check up to 50 years ahead
             const nextNewYearDate = newYearDates[i - 1].toDateString();
-            if (currentNewYearDate === nextNewYearDate && (newYearDates[i - 1].getMonth() === 1 && newYearDates[i - 1].getDate() === 29)) {
+            if (currentNewYearDate === nextNewYearDate && (newYearDates[i - 1].getDate() === 1 || (newYearDates[i - 1].getDate() === 29))) {
                 return i; // Found a repeated year
             }
         }
