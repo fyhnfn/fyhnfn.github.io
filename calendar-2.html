@@ -34,6 +34,7 @@
         .day-range, .special-day {
             font-weight: bold;
             color: #00509E;
+            line-height: 1.75; /* Set line spacing to 1.75 */
         }
         .special-day {
             color: #FF5733;
@@ -179,12 +180,13 @@
         for (let i = currentYear + 1; i <= 50; i++) { // Check up to 50 years ahead
             const nextNewYearDate = newYearDates[i - 1].toDateString();
             if (currentNewYearDate === nextNewYearDate && (newYearDates[i - 1].getMonth() === 1 && newYearDates[i - 1].getDate() === 29)) {
-                return i;
+                return i; // Found a repeated year
             }
         }
-        return currentYear; // No repeated year found
+        return null; // No repeated year found within the range
     }
 
+    // Button functionalities
     document.getElementById('prevYear').addEventListener('click', () => {
         if (currentYear > 1) {
             currentYear--;
@@ -193,22 +195,30 @@
     });
 
     document.getElementById('nextYear').addEventListener('click', () => {
-        currentYear++;
-        displayCalendar(currentYear);
+        if (currentYear < 50) {
+            currentYear++;
+            displayCalendar(currentYear);
+        }
     });
 
     document.getElementById('repeatYear').addEventListener('click', () => {
         const nextRepeatedYear = findNextRepeatedYear();
-        currentYear = nextRepeatedYear;
-        displayCalendar(currentYear);
+        if (nextRepeatedYear) {
+            currentYear = nextRepeatedYear;
+            displayCalendar(currentYear);
+        } else {
+            alert('No repeated year found within the range.');
+        }
     });
 
+    // Initial setup
+    calculateNewYearDates(50);
+    displayCalendar(currentYear);
+
+    // Print function
     function printCalendar() {
         window.print();
     }
-
-    calculateNewYearDates(50); // Pre-calculate New Year's Days for 50 years
-    displayCalendar(currentYear);
 </script>
 
 </body>
