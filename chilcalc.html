@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Birth Simulation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Child Birth Simulation</h1>
+<form id="simulationForm">
+    <label for="first_child_age">First Child Age:</label>
+    <input type="number" id="first_child_age" required>
+    
+    <label for="last_child_age">Last Child Age:</label>
+    <input type="number" id="last_child_age" required>
+    
+    <label for="intervalm">Minimum Interval:</label>
+    <input type="number" id="intervalm" required>
+    
+    <label for="interval">Maximum Interval:</label>
+    <input type="number" id="interval" required>
+    
+    <label for="malebuff">Male Buff (0 for none):</label>
+    <input type="number" id="malebuff" required>
+    
+    <label for="ovulationbuff">Ovulation Buff:</label>
+    <input type="number" id="ovulationbuff" required>
+    
+    <input type="submit" value="Run Simulation">
+</form>
+
+<div id="results"></div>
+
+<script>
+    document.getElementById('simulationForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const firstChildAge = parseInt(document.getElementById('first_child_age').value);
+        const lastChildAge = parseInt(document.getElementById('last_child_age').value);
+        const intervalm = parseInt(document.getElementById('intervalm').value);
+        const interval = parseInt(document.getElementById('interval').value);
+        let malebuff = parseInt(document.getElementById('malebuff').value);
+        const ovulationbuff = parseInt(document.getElementById('ovulationbuff').value);
+
+        if (malebuff === 0) {
+            malebuff = 100;
+        }
+        let total_children = (lastChildAge - firstChildAge) + 1;
+        let children = 0;
+        let singles = 0;
+        let twins = 0;
+        let triplets = 0;
+        let quadruplets = 0;
+        let quintuplets = 0;
+        let sextuplets = 0;
+        let births = 0;
+        let mage = firstChildAge;
+
+        while (total_children > 0) {
+            const ange = (interval !== intervalm) ? Math.floor(Math.random() * (interval - intervalm + 1)) + intervalm : interval;
+            const chance = Math.floor(Math.random() * 1000) + 1;
+            if (chance > 346 * (ovulationbuff / 100) && chance <= 900) {
+                children += 1;
+                singles += 1;
+                mage += 1;
+                total_children -= ange;
+                births += 1;
+            } else if (chance > 900) {
+                mage += 1;
+                total_children -= 1;
+            } else if (chance > 148 && chance <= 346 * (1 + ovulationbuff / 100)) {
+                children += 2;
+                twins += 1;
+                mage += 1;
+                total_children -= ange;
+                births += 1;
+            } else if (chance > 79 * (1 + ovulationbuff / 100) && chance <= 148 * (1 + ovulationbuff / 100)) {
+                children += 3;
+                triplets += 1;
+                mage += 1;
+                total_children -= ange;
+                births += 1;
+            } else if (chance > 9 * (1 + ovulationbuff / 100) && chance <= 78920 * (1 + ovulationbuff / 100)) {
+                children += 4;
+                quadruplets += 1;
+                mage += 1;
+                total_children -= ange;
+                births += 1;
+            } else {
+                const other = Math.floor(Math.random() * (9 - 5 + 1)) + 5;
+                children += other;
+                births += 1;
+                mage += 1;
+                total_children -= ange;
+            }
+        }
+
+        document.getElementById('results').innerHTML = `
+            <h2>Simulation Results</h2>
+            <p>Total Children: ${children}</p>
+            <p>Singles: ${singles}</p>
+            <p>Twins: ${twins}</p>
+            <p>Triplets: ${triplets}</p>
+            <p>Quadruplets: ${quadruplets}</p>
+            <p>Quintuplets: ${quintuplets}</p>
+            <p>Sextuplets: ${sextuplets}</p>
+            <p>Births: ${births}</p>
+        `;
+    });
+</script>
+
+</body>
+</html>
