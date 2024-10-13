@@ -67,50 +67,24 @@
 
 <script>
     const monthNames = [
-        { name: "Primavera", days: 37, specialDays: { 1: "New Year's Day" } },
+        { name: "Primavera", days: 37, specialDays: { 1: "New Year's Day", 21: "Philoson" } },
         { name: "Floralis", days: 38 },
-        { name: "Aestivalis", days: 37, specialDays: { 
-            35: "Tax Day", 
-            34: "Ventussaccus", 
-            26: "Start Threshing", 
-            24: "Scythings" } 
-        },
+        { name: "Aestivalis", days: 37, specialDays: { 2: "Hiemsol", 35: "Tax Day", 34: "Ventussaccus", 26: "Start Threshing", 24: "Scythings" } },
         { name: "Restorare", days: 38 },
         { name: "Revitalis", days: 37 },
-        { name: "Nutrientia", days: 38, specialDays: { 
-            35: "Tax Day", 
-            34: "Cytisum", 
-            32: "Scythings" } 
-        },
-        { name: "Fructalis", days: 37 },
-        { name: "Recolere", days: 38 },
-        { name: "Hypoxis", days: 37, specialDays: { 
-            35: "Tax Day", 
-            34: "Anemoisakos", 
-            26: "Start Threshing", 
-            24: "Scythings" } 
-        },
+        { name: "Nutrientia", days: 38, specialDays: { 5: "Anthotides", 35: "Tax Day", 34: "Cytisum", 32: "Scythings" } },
+        { name: "Fructalis", days: 37, specialDays: { 21: "Anthoson" } },
+        { name: "Recolere", days: 38, specialDays: { 21: "Aestasol" } },
+        { name: "Hypoxis", days: 37, specialDays: { 35: "Tax Day", 34: "Anemoisakos", 26: "Start Threshing", 24: "Scythings" } },
     ];
 
     const holidays = {
-        Hiemsol: { day: 21, month: 6 }, // 21st June
-        Anthotides: { day: 5, month: 11 }, // 5th November
-        Anthoson: { day: 21, month: 9 }, // 21st September
-        Aestasol: { day: 21, month: 12 }, // 21st December
-        Philoson: { day: 21, month: 3 } // 21st March
+        Hiemsol: { day: 2, month: 3 }, // 2nd day of Aestivalis
+        Anthotides: { day: 5, month: 6 }, // 5th day of Nutrientia
+        Anthoson: { day: 21, month: 7 }, // 21st day of Fructalis
+        Aestasol: { day: 21, month: 8 }, // 21st day of Recolere
+        Philoson: { day: 21, month: 1 } // 21st day of Primavera
     };
-
-    // Function to calculate the Gregorian date based on the agricultural year and date
-    function calculateGregorianDate(agriculturalYear, day, month) {
-        let newYearDate = newYearDates[agriculturalYear - 1];
-        let gregorianDate = new Date(newYearDate);
-        let totalDays = monthNames.reduce((acc, m) => acc + m.days, 0);
-        let agriculturalDaysPassed = monthNames.slice(0, monthNames.indexOf(month)).reduce((acc, m) => acc + m.days, 0) + day - 1; // subtract 1 to include current day
-
-        // Calculate the Gregorian date
-        gregorianDate.setDate(newYearDate.getDate() + agriculturalDaysPassed);
-        return gregorianDate;
-    }
 
     // Store the calculated New Year's Day for each agricultural year
     let newYearDates = [];
@@ -137,9 +111,6 @@
         yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
 
         let newYearDate = newYearDates[agriculturalYear - 1];
-
-        let totalDays = 0;
-        let gregorianDate = newYearDate; // Start from New Year's Day
 
         monthNames.forEach((month) => {
             const monthDiv = document.createElement('div');
@@ -172,59 +143,39 @@
                 }
 
                 monthDiv.appendChild(dayDiv);
-                // Move to the next day
-                gregorianDate.setDate(gregorianDate.getDate() + 1); // Increment Gregorian date
             }
 
             calendarDiv.appendChild(monthDiv);
         });
     }
 
-    // Identify repeated years based on New Year and leap year condition
-    function findNextRepeatedYear() {
-        const currentNewYearDate = newYearDates[currentYear - 1].toDateString();
-        for (let i = currentYear + 1; i <= 50; i++) { // Check up to 50 years ahead
-            const nextNewYearDate = newYearDates[i - 1].toDateString();
-            if (currentNewYearDate === nextNewYearDate && (newYearDates[i - 1].getDate() === 1 || (newYearDates[i - 1].getDate() === 29))) {
-                return i; // Found a repeated year
-            }
-        }
-        return null; // No repeated year found within the range
+    function calculateGregorianDate(agriculturalYear, day, month) {
+        let newYearDate = newYearDates[agriculturalYear - 1];
+        let gregorianDate = new Date(newYearDate);
+        let totalDays = monthNames.reduce((acc, m) => acc + m.days, 0);
+        let agriculturalDaysPassed = monthNames.slice(0, month - 1).reduce((acc, m) => acc + m.days, 0) + day - 1; // subtract 1 to include current day
+
+        // Calculate the Gregorian date
+        gregorianDate.setDate(newYearDate.getDate() + agriculturalDaysPassed);
+        return gregorianDate;
     }
 
-    // Button functionalities
     document.getElementById('prevYear').addEventListener('click', () => {
-        if (currentYear > 1) {
-            currentYear--;
-            displayCalendar(currentYear);
-        }
+        currentYear--;
+        displayCalendar(currentYear);
     });
 
     document.getElementById('nextYear').addEventListener('click', () => {
-        if (currentYear < 50) {
-            currentYear++;
-            displayCalendar(currentYear);
-        }
+        currentYear++;
+        displayCalendar(currentYear);
     });
 
     document.getElementById('repeatYear').addEventListener('click', () => {
-        const nextRepeatedYear = findNextRepeatedYear();
-        if (nextRepeatedYear) {
-            currentYear = nextRepeatedYear;
-            displayCalendar(currentYear);
-        } else {
-            alert('No repeated year found within the range.');
-        }
+        // Implement logic for skipping to a repeated year if needed
     });
 
-    // Initial setup
-    calculateNewYearDates(50);
+    calculateNewYearDates(10); // Set how many years to calculate
     displayCalendar(currentYear);
-
-    // Print function
-    function printCalendar() {
-        window.print();
-    }
 </script>
 
 </body>
