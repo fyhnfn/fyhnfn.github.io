@@ -92,17 +92,24 @@
         },
     ];
 
-    // Function to dynamically calculate holiday dates based on agricultural year
-    function calculateHolidays(agriculturalYear, newYearDate) {
-        const holidays = {
-            Aestadies: new Date(newYearDate.getTime() + (1 - 1) * 24 * 60 * 60 * 1000), // 1st of Primavera
-            Aestasol: new Date(newYearDate.getTime() + (60 - 1) * 24 * 60 * 60 * 1000), // Aestasol is 21st day of December
-            Hiemsol: new Date(newYearDate.getTime() + (182 - 1) * 24 * 60 * 60 * 1000), // Hiemsol is 21st day of June
-            Philoson: new Date(newYearDate.getTime() + (119 - 1) * 24 * 60 * 60 * 1000), // Philoson is 21st day of March
-            Anthoson: new Date(newYearDate.getTime() + (76 - 1) * 24 * 60 * 60 * 1000),  // Anthoson is 21st day of September
-            Anthotides: new Date(newYearDate.getTime() + (226 - 1) * 24 * 60 * 60 * 1000) // Anthotides is 5th day of November
-        };
-        return holidays;
+    const holidays = {
+        Hiemsol: { day: 21, month: 6 }, // 21st June
+        Anthotides: { day: 5, month: 11 }, // 5th November
+        Anthoson: { day: 21, month: 9 }, // 21st September
+        Aestasol: { day: 21, month: 12 }, // 21st December
+        Philoson: { day: 21, month: 3 } // 21st March
+    };
+
+    // Function to calculate the Gregorian date based on the agricultural year and date
+    function calculateGregorianDate(agriculturalYear, day, month) {
+        let newYearDate = newYearDates[agriculturalYear - 1];
+        let gregorianDate = new Date(newYearDate);
+        let totalDays = monthNames.reduce((acc, m) => acc + m.days, 0);
+        let agriculturalDaysPassed = monthNames.slice(0, monthNames.indexOf(month)).reduce((acc, m) => acc + m.days, 0) + day - 1; // subtract 1 to include current day
+
+        // Calculate the Gregorian date
+        gregorianDate.setDate(newYearDate.getDate() + agriculturalDaysPassed);
+        return gregorianDate;
     }
 
     // Store the calculated New Year's Day for each agricultural year
@@ -130,11 +137,9 @@
         yearDisplay.innerText = `Agricultural Year: ${agriculturalYear}, Gregorian Year: ${gregorianYear}`;
 
         let newYearDate = newYearDates[agriculturalYear - 1];
-        const holidays = calculateHolidays(agriculturalYear, newYearDate); // Calculate the holidays for the current year
 
         let totalDays = 0;
         let gregorianDate = newYearDate; // Start from New Year's Day
-        let dayOfWeek = gregorianDate.getDay();
 
         monthNames.forEach((month) => {
             const monthDiv = document.createElement('div');
@@ -148,28 +153,27 @@
 
                 // Prepare output for the agricultural day
                 const agriculturalDay = `${day}th day of ${month.name}, Year ${agriculturalYear}`;
-                let gregorianStartDay = `${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek]}, ${gregorianDate.getDate()}th day of ${gregorianDate.toLocaleString('default', { month: 'long' })}, ${gregorianDate.getFullYear()}`;
+                let gregorianStartDay = calculateGregorianDate(agriculturalYear, day, monthNames.indexOf(month) + 1); // Convert to Gregorian date
+                const gregorianDayString = `${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][gregorianStartDay.getDay()]}, ${gregorianStartDay.getDate()}th day of ${gregorianStartDay.toLocaleString('default', { month: 'long' })}, ${gregorianStartDay.getFullYear()}`;
 
-                dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianStartDay})`;
+                dayDiv.innerHTML = `${agriculturalDay} (Gregorian: ${gregorianDayString})`;
 
                 // Handle special days
                 if (month.specialDays && month.specialDays[day]) {
-                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianStartDay})</span>`;
+                    dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${month.specialDays[day]} (Gregorian: ${gregorianDayString})</span>`;
                 }
 
                 // Check for holidays
                 for (const holiday in holidays) {
-                    const holidayDate = holidays[holiday];
-                    if (holidayDate.getDate() === day && holidayDate.getMonth() === (monthNames.indexOf(month))) {
-                        dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${holiday} (Gregorian: ${gregorianStartDay})</span>`;
+                    const holidayInfo = holidays[holiday];
+                    if (holidayInfo.day === day && monthNames.indexOf(month) + 1 === holidayInfo.month) {
+                        dayDiv.innerHTML = `<span class="special-day">${agriculturalDay}: ${holiday} (Gregorian: ${gregorianDayString})</span>`;
                     }
                 }
 
                 monthDiv.appendChild(dayDiv);
-
                 // Move to the next day
                 gregorianDate.setDate(gregorianDate.getDate() + 1); // Increment Gregorian date
-                dayOfWeek = (dayOfWeek + 1) % 7; // Update the day of the week
             }
 
             calendarDiv.appendChild(monthDiv);
