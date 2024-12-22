@@ -3,21 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Python File Engine</title>
+  <title>Embedded Python Code Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 20px;
       background-color: #f4f4f9;
     }
     .container {
       max-width: 800px;
-      margin: 50px auto;
+      margin: 20px auto;
       padding: 20px;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin: 5px 0;
+      cursor: pointer;
+      background: #f9f9f9;
+    }
+    li:hover {
+      background: #e0e0e0;
     }
     button {
       margin: 10px 0;
@@ -43,105 +58,90 @@
       max-height: 300px;
       overflow-y: auto;
     }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      margin: 5px 0;
-      cursor: pointer;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background: #f9f9f9;
-    }
-    li:hover {
-      background: #e0e0e0;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Python File Engine</h1>
-    <ul id="fileList"></ul>
-    <button onclick="runSelectedFile()">Run Selected File</button>
+    <h1>Python Code Viewer</h1>
+    <p>Select a Python script to view or execute:</p>
+    <ul id="pythonFileList"></ul>
+    <button onclick="runSelectedPython()">Run Selected File</button>
     <div id="output">Output will appear here...</div>
   </div>
 
-  <!-- Embedded Python files -->
-  <template id="file1" data-name="Hello World">
+  <!-- Embedded Python Files -->
+  <script type="text/python" id="file1">
 print("Hello, World!")
 print("This is Python File 1.")
-  </template>
+  </script>
 
-  <template id="file2" data-name="Loop Example">
+  <script type="text/python" id="file2">
 for i in range(5):
     print(f"Line {i + 1}")
-  </template>
+  </script>
 
-  <template id="file3" data-name="Math Operations">
+  <script type="text/python" id="file3">
 print("2 + 2 =", 2 + 2)
 print("3 * 3 =", 3 * 3)
-  </template>
+  </script>
 
   <script>
-    const outputDiv = document.getElementById("output");
-    const fileList = document.getElementById("fileList");
+    const fileListElement = document.getElementById('pythonFileList');
+    const outputDiv = document.getElementById('output');
     let selectedFileId = null;
 
-    // Dynamically populate the file list based on embedded templates
-    function populateFileList() {
-      const templates = document.querySelectorAll("template");
-      templates.forEach((template) => {
-        const listItem = document.createElement("li");
-        listItem.textContent = template.dataset.name || template.id;
-        listItem.dataset.fileId = template.id;
-        listItem.onclick = () => selectFile(template.id, listItem);
-        fileList.appendChild(listItem);
+    // Populate the list of Python files by scanning <script> tags with type="text/python"
+    function populatePythonFileList() {
+      const pythonScripts = document.querySelectorAll('script[type="text/python"]');
+      pythonScripts.forEach((script) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = script.id || "Unnamed Script";
+        listItem.dataset.fileId = script.id;
+        listItem.onclick = () => selectPythonFile(script.id, listItem);
+        fileListElement.appendChild(listItem);
       });
     }
 
     // Highlight the selected file
-    function selectFile(fileId, listItem) {
+    function selectPythonFile(fileId, listItem) {
       selectedFileId = fileId;
-      document.querySelectorAll("#fileList li").forEach((li) => {
-        li.style.background = "#f9f9f9";
+      document.querySelectorAll('#pythonFileList li').forEach((li) => {
+        li.style.background = '#f9f9f9';
       });
-      listItem.style.background = "#d0f0ff";
+      listItem.style.background = '#d0f0ff';
     }
 
-    // Run the selected file
-    function runSelectedFile() {
+    // Simulate execution of the selected Python file
+    function runSelectedPython() {
       if (!selectedFileId) {
-        outputDiv.textContent = "Please select a file to run.";
+        outputDiv.textContent = 'Please select a file to run.';
         return;
       }
 
-      const fileContent = document.getElementById(selectedFileId).textContent.trim();
+      const scriptContent = document.getElementById(selectedFileId).textContent.trim();
 
       try {
         outputDiv.textContent = `Running ${selectedFileId}...\n`;
-        const result = simulatePython(fileContent);
+        const result = simulatePythonExecution(scriptContent);
         outputDiv.textContent += result;
       } catch (error) {
         outputDiv.textContent += `Error: ${error.message}`;
       }
     }
 
-    // Simulate Python code execution
-    function simulatePython(code) {
-      // Basic Python simulation: only supports `print()` and loops
-      const lines = code.split("\n");
-      let output = "";
+    // Simulate basic Python execution
+    function simulatePythonExecution(code) {
+      const lines = code.split('\n');
+      let output = '';
 
       lines.forEach((line) => {
-        if (line.startsWith("print(") && line.endsWith(")")) {
-          output += line.slice(6, -1) + "\n"; // Extract content inside `print()`
-        } else if (line.startsWith("for") && line.includes("in range(")) {
-          const loopMatch = line.match(/for (\w+) in range\((\d+)\):/);
-          if (loopMatch) {
-            const [_, variable, range] = loopMatch;
-            for (let i = 0; i < Number(range); i++) {
+        if (line.startsWith('print(') && line.endsWith(')')) {
+          output += line.slice(6, -1) + '\n'; // Extract content inside `print()`
+        } else if (line.startsWith('for') && line.includes('in range(')) {
+          const match = line.match(/for (\w+) in range\((\d+)\):/);
+          if (match) {
+            const [_, variable, range] = match;
+            for (let i = 0; i < parseInt(range); i++) {
               output += `Line ${i + 1}\n`;
             }
           }
@@ -154,7 +154,7 @@ print("3 * 3 =", 3 * 3)
     }
 
     // Initialize the file list on page load
-    populateFileList();
+    populatePythonFileList();
   </script>
 </body>
 </html>
