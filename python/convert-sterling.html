@@ -44,6 +44,7 @@
   <h1>Python Code Simulator</h1>
   <select id="fileSelector">
     <option value="dtL">Convert Dollars to Pounds</option> 
+    <option value="Ltd">Convert Pounds to Dollars</option>
   </select>
   <button onclick="runSelectedFile()">Run Code</button>
   <pre id="output"></pre>
@@ -109,10 +110,34 @@ while True:
         } else {
           outputElement.textContent = "Invalid input. Please enter a valid number.";
         }
-      } else {
+
+
+      } 
+      if (selectedFile === "Ltd"){
+        const pounds = parseFloat(document.getElementById("pounds").value) || 0;
+        const shillings = parseFloat(document.getElementById("shillings").value) || 0;
+        const pence = parseFloat(document.getElementById("pence").value) || 0;
+        const farthings = parseFloat(document.getElementById("farthings").value) || 0;
+        
+        // Conversion factors
+        const shillingToPounds = 1 / 20; // 1 Shilling = 1/20 Pounds
+        const penceToPounds = 1 / 240;   // 1 Pence = 1/240 Pounds
+        const farthingToPounds = 1 / 960; // 1 Farthing = 1/960 Pounds
+        
+        // Convert all to pounds
+        const totalPounds = pounds + (shillings * shillingToPounds) + (pence * penceToPounds) + (farthings * farthingToPounds);
+        
+        // Conversion rate: 1 Pound = 62.5 Dollars
+        const dollars = totalPounds * 62.5;
+  
+        // Display the result
+        const outputElement = document.getElementById("output");
+        outputElement.textContent = `Total: £${totalPounds.toFixed(2)} is equivalent to $${dollars.toFixed(2)}`;
+      }
+      else {
         outputElement.textContent = "No code available for execution.";
       }
-    }
+      
   </script>
 </body>
 </html>
