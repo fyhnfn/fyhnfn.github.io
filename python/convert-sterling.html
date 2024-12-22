@@ -43,25 +43,20 @@
 <body>
   <h1>Python Code Simulator</h1>
   <select id="fileSelector">
-    <option value="converter">Currency Converter</option>
+    <option value="dtL">Currency Converter</option>
   </select>
   <button onclick="runSelectedFile()">Run Code</button>
   <pre id="output"></pre>
 
   <script>
     const files = {
-      "converter": `
+      "dtL": `
 import math
 import cmath
 from fractions import Fraction
 
 while True:
-    print("1. Convert to pounds")
-    print("2. Convert to dollars")
-    opt = input("Input Choice: ")
     try:
-        opt = int(opt)
-        if opt == 1:
             dol = float(input("Dollars: "))
             dol = round(dol / (62.5 / 960))
             L, s, d = 0, 0, 0
@@ -75,10 +70,6 @@ while True:
                 s -= 20
                 L += 1
             print(f"\${dol} is £{L} {s}/{d} + {Fraction(dol, 4)}")
-        elif opt == 2:
-            print("Dollar conversion not implemented yet.")
-        else:
-            print("Invalid choice, try again.")
     except ValueError:
         print("Invalid input. Please enter numbers.")
 `
