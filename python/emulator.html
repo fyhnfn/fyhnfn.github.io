@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Embedded Python File Engine</title>
+  <title>Python File Engine</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,39 +43,84 @@
       max-height: 300px;
       overflow-y: auto;
     }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin: 5px 0;
+      cursor: pointer;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+    li:hover {
+      background: #e0e0e0;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Python File Engine</h1>
-    <select id="fileSelector" style="width: 100%; margin-bottom: 10px;">
-      <option value="file1">Python File 1</option>
-      <option value="file2">Python File 2</option>
-    </select>
+    <ul id="fileList"></ul>
     <button onclick="runSelectedFile()">Run Selected File</button>
     <div id="output">Output will appear here...</div>
   </div>
 
   <!-- Embedded Python files -->
-  <template id="file1">
+  <template id="file1" data-name="Hello World">
 print("Hello, World!")
 print("This is Python File 1.")
   </template>
 
-  <template id="file2">
+  <template id="file2" data-name="Loop Example">
 for i in range(5):
     print(f"Line {i + 1}")
   </template>
 
+  <template id="file3" data-name="Math Operations">
+print("2 + 2 =", 2 + 2)
+print("3 * 3 =", 3 * 3)
+  </template>
+
   <script>
     const outputDiv = document.getElementById("output");
+    const fileList = document.getElementById("fileList");
+    let selectedFileId = null;
 
+    // Dynamically populate the file list based on embedded templates
+    function populateFileList() {
+      const templates = document.querySelectorAll("template");
+      templates.forEach((template) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = template.dataset.name || template.id;
+        listItem.dataset.fileId = template.id;
+        listItem.onclick = () => selectFile(template.id, listItem);
+        fileList.appendChild(listItem);
+      });
+    }
+
+    // Highlight the selected file
+    function selectFile(fileId, listItem) {
+      selectedFileId = fileId;
+      document.querySelectorAll("#fileList li").forEach((li) => {
+        li.style.background = "#f9f9f9";
+      });
+      listItem.style.background = "#d0f0ff";
+    }
+
+    // Run the selected file
     function runSelectedFile() {
-      const selectedFile = document.getElementById("fileSelector").value;
-      const fileContent = document.getElementById(selectedFile).textContent.trim();
+      if (!selectedFileId) {
+        outputDiv.textContent = "Please select a file to run.";
+        return;
+      }
+
+      const fileContent = document.getElementById(selectedFileId).textContent.trim();
 
       try {
-        outputDiv.textContent = `Running ${selectedFile}...\n`;
+        outputDiv.textContent = `Running ${selectedFileId}...\n`;
         const result = simulatePython(fileContent);
         outputDiv.textContent += result;
       } catch (error) {
@@ -83,6 +128,7 @@ for i in range(5):
       }
     }
 
+    // Simulate Python code execution
     function simulatePython(code) {
       // Basic Python simulation: only supports `print()` and loops
       const lines = code.split("\n");
@@ -106,6 +152,9 @@ for i in range(5):
 
       return output;
     }
+
+    // Initialize the file list on page load
+    populateFileList();
   </script>
 </body>
 </html>
