@@ -43,7 +43,7 @@
 <body>
   <h1>Python Code Simulator</h1>
   <select id="fileSelector">
-    <option value="dtL">Currency Converter</option>
+    <option value="dtL">Convert Dollars to Pounds</option> 
   </select>
   <button onclick="runSelectedFile()">Run Code</button>
   <pre id="output"></pre>
@@ -69,7 +69,7 @@ while True:
             while s >= 20:
                 s -= 20
                 L += 1
-            print(f"\${dol} is £{L} {s}/{d} + {Fraction(dol, 4)}")
+            print(f"\\${dol} is £{L} {s}/{d} + {Fraction(dol, 4)}")
     except ValueError:
         print("Invalid input. Please enter numbers.")
 `
@@ -81,13 +81,12 @@ while True:
       const code = files[selectedFile];
       const outputElement = document.getElementById("output");
 
-      // Simulate execution of the code
-      if (selectedFile === "converter") {
-        const simulatedInput = prompt("Enter 1 to Convert to pounds or 2 to Convert to dollars:");
-        let simulatedOutput = "";
-
-        if (simulatedInput === "1") {
-          const dollars = prompt("Enter dollars:");
+      // Simulate execution of the code for "dtL"
+      if (selectedFile === "dtL") {
+        const dollars = prompt("Enter dollars:");
+        
+        // Handling the conversion logic directly in JavaScript
+        try {
           const dol = Math.round(parseFloat(dollars) / (62.5 / 960));
           let L = 0, s = 0, d = 0;
           let remainingDol = dol;
@@ -104,14 +103,11 @@ while True:
             s -= 20;
             L += 1;
           }
-          simulatedOutput = `\$${dollars} is £${L} ${s}/${d} + ${remainingDol}/4`;
-        } else if (simulatedInput === "2") {
-          simulatedOutput = "Dollar conversion not implemented yet.";
-        } else {
-          simulatedOutput = "Invalid choice.";
-        }
 
-        outputElement.textContent = simulatedOutput;
+          outputElement.textContent = `\$${dollars} is £${L} ${s}/${d} + ${remainingDol}/4`;
+        } catch (error) {
+          outputElement.textContent = "Invalid input. Please enter a valid number.";
+        }
       } else {
         outputElement.textContent = "No code available for execution.";
       }
