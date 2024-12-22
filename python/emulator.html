@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Embedded Python File Engine</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      margin: 10px 0;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #282c34;
+      color: #61dafb;
+      font-family: "Courier New", Courier, monospace;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Python File Engine</h1>
+    <select id="fileSelector" style="width: 100%; margin-bottom: 10px;">
+      <option value="file1">Python File 1</option>
+      <option value="file2">Python File 2</option>
+    </select>
+    <button onclick="runSelectedFile()">Run Selected File</button>
+    <div id="output">Output will appear here...</div>
+  </div>
+
+  <!-- Embedded Python files -->
+  <template id="file1">
+print("Hello, World!")
+print("This is Python File 1.")
+  </template>
+
+  <template id="file2">
+for i in range(5):
+    print(f"Line {i + 1}")
+  </template>
+
+  <script>
+    const outputDiv = document.getElementById("output");
+
+    function runSelectedFile() {
+      const selectedFile = document.getElementById("fileSelector").value;
+      const fileContent = document.getElementById(selectedFile).textContent.trim();
+
+      try {
+        outputDiv.textContent = `Running ${selectedFile}...\n`;
+        const result = simulatePython(fileContent);
+        outputDiv.textContent += result;
+      } catch (error) {
+        outputDiv.textContent += `Error: ${error.message}`;
+      }
+    }
+
+    function simulatePython(code) {
+      // Basic Python simulation: only supports `print()` and loops
+      const lines = code.split("\n");
+      let output = "";
+
+      lines.forEach((line) => {
+        if (line.startsWith("print(") && line.endsWith(")")) {
+          output += line.slice(6, -1) + "\n"; // Extract content inside `print()`
+        } else if (line.startsWith("for") && line.includes("in range(")) {
+          const loopMatch = line.match(/for (\w+) in range\((\d+)\):/);
+          if (loopMatch) {
+            const [_, variable, range] = loopMatch;
+            for (let i = 0; i < Number(range); i++) {
+              output += `Line ${i + 1}\n`;
+            }
+          }
+        } else {
+          throw new Error(`Unsupported command: ${line}`);
+        }
+      });
+
+      return output;
+    }
+  </script>
+</body>
+</html>
