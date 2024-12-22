@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Code Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      color: #444;
+    }
+    select, button, pre {
+      display: block;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 500px;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Python Code Simulator</h1>
+  <select id="fileSelector">
+    <option value="converter">Currency Converter</option>
+  </select>
+  <button onclick="runSelectedFile()">Run Code</button>
+  <pre id="output"></pre>
+
+  <script>
+    const files = {
+      "converter": `
+import math
+import cmath
+from fractions import Fraction
+
+while True:
+    print("1. Convert to pounds")
+    print("2. Convert to dollars")
+    opt = input("Input Choice: ")
+    try:
+        opt = int(opt)
+        if opt == 1:
+            dol = float(input("Dollars: "))
+            dol = round(dol / (62.5 / 960))
+            L, s, d = 0, 0, 0
+            while dol >= 4:
+                dol -= 4
+                d += 1
+            while d >= 12:
+                d -= 12
+                s += 1
+            while s >= 20:
+                s -= 20
+                L += 1
+            print(f"\${dol} is £{L} {s}/{d} + {Fraction(dol, 4)}")
+        elif opt == 2:
+            print("Dollar conversion not implemented yet.")
+        else:
+            print("Invalid choice, try again.")
+    except ValueError:
+        print("Invalid input. Please enter numbers.")
+`
+    };
+
+    function runSelectedFile() {
+      const fileSelector = document.getElementById("fileSelector");
+      const selectedFile = fileSelector.value;
+      const code = files[selectedFile];
+      const outputElement = document.getElementById("output");
+
+      // Simulate execution of the code
+      if (selectedFile === "converter") {
+        const simulatedInput = prompt("Enter 1 to Convert to pounds or 2 to Convert to dollars:");
+        let simulatedOutput = "";
+
+        if (simulatedInput === "1") {
+          const dollars = prompt("Enter dollars:");
+          const dol = Math.round(parseFloat(dollars) / (62.5 / 960));
+          let L = 0, s = 0, d = 0;
+          let remainingDol = dol;
+
+          while (remainingDol >= 4) {
+            remainingDol -= 4;
+            d += 1;
+          }
+          while (d >= 12) {
+            d -= 12;
+            s += 1;
+          }
+          while (s >= 20) {
+            s -= 20;
+            L += 1;
+          }
+          simulatedOutput = `\$${dollars} is £${L} ${s}/${d} + ${remainingDol}/4`;
+        } else if (simulatedInput === "2") {
+          simulatedOutput = "Dollar conversion not implemented yet.";
+        } else {
+          simulatedOutput = "Invalid choice.";
+        }
+
+        outputElement.textContent = simulatedOutput;
+      } else {
+        outputElement.textContent = "No code available for execution.";
+      }
+    }
+  </script>
+</body>
+</html>
