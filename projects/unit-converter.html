@@ -59,6 +59,32 @@
 
   <script>
     const unitCategories = {
+      temperature: {
+        "Celsius": x => x,
+        "Fahrenheit": x => (x - 32) * 5/9,
+        "Kelvin": x => x - 273.15,
+        "Rankine": x => (x - 491.67) * 5/9,
+        "Delisle": x => 100 - x * 2/3,
+        "Wedgwood": x => (x * 100 + 1077),
+        "Gas mark": x => x * 14 + 121,
+        "Leiden": x => x * 1,
+        "Reaumer": x => x * 1.25,
+        "Romer": x => (x - 7.5) * 40/21,
+        "Pomeroi": x => (x - 21) * (8/18)
+      },
+      temperatureTo: {
+        "Celsius": x => x,
+        "Fahrenheit": x => x * 9/5 + 32,
+        "Kelvin": x => x + 273.15,
+        "Rankine": x => (x + 273.15) * 9/5,
+        "Delisle": x => (100 - x) * 3/2,
+        "Wedgwood": x => (x - 1077) / 100,
+        "Gas mark": x => (x - 121) / 14,
+        "Leiden": x => x,
+        "Reaumer": x => x * 0.8,
+        "Romer": x => x * 21/40 + 7.5,
+        "Pomeroi": x => x * 18/8 + 21
+      },
       volume: {
         "Litre": 1,
         "Millilitre": 0.001,
@@ -172,7 +198,8 @@
       const category = categorySelect.value;
       fromUnitSelect.innerHTML = "";
       toUnitSelect.innerHTML = "";
-      for (const unit in unitCategories[category]) {
+      const units = category === "temperature" ? unitCategories.temperature : unitCategories[category];
+      for (const unit in units) {
         const optionFrom = document.createElement("option");
         optionFrom.value = unit;
         optionFrom.textContent = unit;
@@ -196,10 +223,18 @@
         return;
       }
 
-      const fromFactor = unitCategories[category][fromUnit];
-      const toFactor = unitCategories[category][toUnit];
+      let resultValue;
 
-      const resultValue = value * fromFactor / toFactor;
+      if (category === "temperature") {
+        const toCelsius = unitCategories.temperature[fromUnit];
+        const fromCelsius = unitCategories.temperatureTo[toUnit];
+        resultValue = fromCelsius(toCelsius(value));
+      } else {
+        const fromFactor = unitCategories[category][fromUnit];
+        const toFactor = unitCategories[category][toUnit];
+        resultValue = value * fromFactor / toFactor;
+      }
+
       document.getElementById("result").textContent = `${value} ${fromUnit} = ${resultValue.toLocaleString()} ${toUnit}`;
     }
 
