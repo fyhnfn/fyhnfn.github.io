@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Area Unit Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .converter {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="converter">
+    <h2>Area Unit Converter</h2>
+    <label for="inputValue">Enter value:</label>
+    <input type="number" id="inputValue" placeholder="Enter area value" />
+
+    <label for="fromUnit">From:</label>
+    <select id="fromUnit"></select>
+
+    <label for="toUnit">To:</label>
+    <select id="toUnit"></select>
+
+    <button onclick="convertArea()">Convert</button>
+
+    <h3 id="result"></h3>
+  </div>
+
+  <script>
+    const units = {
+      "Square Kilometres (sq km)": 1e6,
+      "Square Metres (sq m)": 1,
+      "Square Centimetres (sq cm)": 0.0001,
+      "Square Millimetres (sq mm)": 0.000001,
+      "Square Miles (sq mi)": 2.59e6,
+      "Square Yards (sq yd)": 0.836127,
+      "Square Feet (sq ft)": 0.092903,
+      "Square Inches (sq in)": 0.00064516,
+      "Acres": 4046.86,
+      "Hectares": 10000,
+      "Square Leagues (sq leagues)": 2.58999e7
+    };
+
+    const fromUnitSelect = document.getElementById("fromUnit");
+    const toUnitSelect = document.getElementById("toUnit");
+
+    Object.keys(units).forEach(unit => {
+      const optionFrom = document.createElement("option");
+      optionFrom.value = unit;
+      optionFrom.textContent = unit;
+      fromUnitSelect.appendChild(optionFrom);
+
+      const optionTo = document.createElement("option");
+      optionTo.value = unit;
+      optionTo.textContent = unit;
+      toUnitSelect.appendChild(optionTo);
+    });
+
+    function convertArea() {
+      const value = parseFloat(document.getElementById("inputValue").value);
+      const fromUnit = document.getElementById("fromUnit").value;
+      const toUnit = document.getElementById("toUnit").value;
+
+      if (isNaN(value)) {
+        document.getElementById("result").textContent = "Please enter a valid number.";
+        return;
+      }
+
+      const valueInSquareMeters = value * units[fromUnit];
+      const convertedValue = valueInSquareMeters / units[toUnit];
+
+      document.getElementById("result").textContent = `${value} ${fromUnit} = ${convertedValue.toLocaleString()} ${toUnit}`;
+    }
+  </script>
+</body>
+</html>
