@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Area Unit Converter</title>
+  <title>Multi Unit Converter</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
       background: white;
       padding: 20px;
       border-radius: 8px;
-      max-width: 400px;
+      max-width: 500px;
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
@@ -31,9 +31,20 @@
 </head>
 <body>
   <div class="converter">
-    <h2>Area Unit Converter</h2>
+    <h2>Universal Unit Converter</h2>
+    <label for="category">Category:</label>
+    <select id="category" onchange="populateUnits()">
+      <option value="area">Area</option>
+      <option value="length">Length</option>
+      <option value="volume">Volume</option>
+      <option value="weight">Weight</option>
+      <option value="temperature">Temperature</option>
+      <option value="energy">Energy & Power</option>
+      <option value="speed">Speed</option>
+    </select>
+
     <label for="inputValue">Enter value:</label>
-    <input type="number" id="inputValue" placeholder="Enter area value" />
+    <input type="number" id="inputValue" placeholder="Enter value" />
 
     <label for="fromUnit">From:</label>
     <select id="fromUnit"></select>
@@ -41,56 +52,191 @@
     <label for="toUnit">To:</label>
     <select id="toUnit"></select>
 
-    <button onclick="convertArea()">Convert</button>
+    <button onclick="convert()">Convert</button>
 
     <h3 id="result"></h3>
   </div>
 
   <script>
-    const units = {
-      "Square Kilometres (sq km)": 1e6,
-      "Square Metres (sq m)": 1,
-      "Square Centimetres (sq cm)": 0.0001,
-      "Square Millimetres (sq mm)": 0.000001,
-      "Square Miles (sq mi)": 2.59e6,
-      "Square Yards (sq yd)": 0.836127,
-      "Square Feet (sq ft)": 0.092903,
-      "Square Inches (sq in)": 0.00064516,
-      "Acres": 4046.86,
-      "Hectares": 10000,
-      "Square Leagues (sq leagues)": 2.58999e7
+    const unitCategories = {
+      area: {
+        "Square Kilometres (sq km)": 1e6,
+        "Square Metres (sq m)": 1,
+        "Square Centimetres (sq cm)": 0.0001,
+        "Square Miles (sq mi)": 2.59e6,
+        "Square Yards (sq yd)": 0.836127,
+        "Square Feet (sq ft)": 0.092903,
+        "Square Inches (sq in)": 0.00064516,
+        "Acres": 4046.86,
+        "Hectares": 10000,
+        "Square Leagues": 2.59e7,
+        "Perch": 25.2929,
+        "Rood": 1011.714,
+        "Bovate": 6070,
+        "Virgate": 12140,
+        "Carucate": 48470,
+        "Hide": 48470,
+        "Hundred": 484700,
+        "Knight's Fee": 485620
+      },
+      length: {
+        "Metres": 1,
+        "Kilometres": 1000,
+        "Centimetres": 0.01,
+        "Millimetres": 0.001,
+        "Micrometres": 1e-6,
+        "Nanometres": 1e-9,
+        "Twip": 1.763889e-5,
+        "Thou": 0.0000254,
+        "Poppyseed": 0.0009,
+        "Barleycorns": 0.00847,
+        "Inch": 0.0254,
+        "Digit": 0.01905,
+        "Finger": 0.1143,
+        "Nail of cloth": 0.05715,
+        "Palm": 0.0762,
+        "Shaftment": 0.1524,
+        "Link": 0.201168,
+        "Span": 0.2286,
+        "Cubit": 0.4572,
+        "Ell": 1.143,
+        "Hands": 0.1016,
+        "Feet": 0.3048,
+        "Yards": 0.9144,
+        "Chains": 20.1168,
+        "Furlongs": 201.168,
+        "Miles": 1609.34,
+        "Leagues": 4828.032,
+        "Fathoms": 1.8288,
+        "Cables": 219.456,
+        "Nautical miles": 1853,
+        "Rods": 5.0292
+      },
+      volume: {
+        "Litre": 1,
+        "Millilitre": 0.001,
+        "Minim": 6.161e-5,
+        "Drachm": 0.003697,
+        "Scruple": 0.001296,
+        "Apothecary ounces": 0.02957,
+        "Fluid ounce": 0.02957,
+        "Apothecary pints": 0.473176,
+        "Jack": 0.03,
+        "Gill": 0.118,
+        "Pint": 0.473,
+        "Quart": 0.946,
+        "Pottle": 1.892,
+        "Gallon": 3.785,
+        "Wine rundlet": 68.13,
+        "Wine tierce": 136.26,
+        "Wine barrel": 119.24,
+        "Wine hogshead": 238.48,
+        "Wine tertian": 340.69,
+        "Wine pipe": 476.96,
+        "Wine tun": 953.92,
+        "Wine pint": 0.473,
+        "Wine gallon": 3.785,
+        "US gallon": 3.785,
+        "Ale pint": 0.568,
+        "Ale gallon": 4.546,
+        "Ale pin": 9.092,
+        "Ale firkin": 40.914,
+        "Ale kilderkin": 81.829,
+        "Ale barrel": 163.659,
+        "Ale hogshead": 245.488,
+        "Ale pipe": 490.977,
+        "Ale tun": 981.954,
+        "Peck": 9.092,
+        "Kenning": 18.184,
+        "Bushel": 36.368,
+        "Strike": 72.736,
+        "Coomb": 145.472,
+        "Seam": 290.944,
+        "Perch": 25.718,
+        "Cord": 128,
+        "Fluid grain": 6.161e-5,
+        "Apothecary drachm": 0.003697,
+        "Apothecary scruple": 0.001296,
+        "Tumbler": 0.25,
+        "Breakfastcup": 0.25,
+        "Coffeecup": 0.15,
+        "Teacup": 0.15,
+        "Wineglass": 0.1,
+        "Tablespoon Australia": 0.02,
+        "Tablespoon": 0.015,
+        "Teaspoon": 0.005,
+        "Dessertspoon": 0.01,
+        "Saltspoon": 0.0025,
+        "Coffeespoon": 0.0025,
+        "Drop": 0.00005,
+        "Smidgen": 0.00005,
+        "Pinch": 0.00015,
+        "Dash": 0.0006
+      },
+      energy: {
+        "Foot-pound": 1.35582,
+        "lb-ft/s": 1.35582,
+        "Horsepower": 745.7,
+        "Watts": 1,
+        "Kilowatts": 1000,
+        "Kilojoules": 1000,
+        "Gram calorie": 4.184,
+        "Kilocalorie": 4184,
+        "Watt hour": 3600,
+        "Kilowatt hour": 3.6e6,
+        "Electronvolts": 1.60218e-19,
+        "BTU": 1055.06,
+        "US therm": 1.055e8
+      },
+      speed: {
+        "mph": 0.44704,
+        "ft/s": 0.3048,
+        "m/s": 1,
+        "knots": 0.514444,
+        "km/h": 0.277778
+      }
     };
 
+    const categorySelect = document.getElementById("category");
     const fromUnitSelect = document.getElementById("fromUnit");
     const toUnitSelect = document.getElementById("toUnit");
 
-    Object.keys(units).forEach(unit => {
-      const optionFrom = document.createElement("option");
-      optionFrom.value = unit;
-      optionFrom.textContent = unit;
-      fromUnitSelect.appendChild(optionFrom);
+    function populateUnits() {
+      const category = categorySelect.value;
+      fromUnitSelect.innerHTML = "";
+      toUnitSelect.innerHTML = "";
+      for (const unit in unitCategories[category]) {
+        const optionFrom = document.createElement("option");
+        optionFrom.value = unit;
+        optionFrom.textContent = unit;
+        fromUnitSelect.appendChild(optionFrom);
 
-      const optionTo = document.createElement("option");
-      optionTo.value = unit;
-      optionTo.textContent = unit;
-      toUnitSelect.appendChild(optionTo);
-    });
+        const optionTo = document.createElement("option");
+        optionTo.value = unit;
+        optionTo.textContent = unit;
+        toUnitSelect.appendChild(optionTo);
+      }
+    }
 
-    function convertArea() {
+    function convert() {
       const value = parseFloat(document.getElementById("inputValue").value);
-      const fromUnit = document.getElementById("fromUnit").value;
-      const toUnit = document.getElementById("toUnit").value;
+      const category = categorySelect.value;
+      const fromUnit = fromUnitSelect.value;
+      const toUnit = toUnitSelect.value;
 
       if (isNaN(value)) {
         document.getElementById("result").textContent = "Please enter a valid number.";
         return;
       }
 
-      const valueInSquareMeters = value * units[fromUnit];
-      const convertedValue = valueInSquareMeters / units[toUnit];
+      const fromFactor = unitCategories[category][fromUnit];
+      const toFactor = unitCategories[category][toUnit];
 
-      document.getElementById("result").textContent = `${value} ${fromUnit} = ${convertedValue.toLocaleString()} ${toUnit}`;
+      const resultValue = value * fromFactor / toFactor;
+      document.getElementById("result").textContent = `${value} ${fromUnit} = ${resultValue.toLocaleString()} ${toUnit}`;
     }
+
+    populateUnits();
   </script>
 </body>
 </html>
