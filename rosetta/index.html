@@ -1,186 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>RosettaWorks</title>
-  <style>
-    body { display: flex; margin: 0; font-family: sans-serif; height: 100vh; }
-    #sidebar {
-      width: 250px;
-      background: #f4f4f4;
-      padding: 1rem;
-      overflow-y: auto;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-    }
-    #main { flex-grow: 1; padding: 1rem; overflow-y: auto; }
-    .page-link { color: blue; cursor: pointer; text-decoration: underline; display: block; margin: 4px 0; }
-    #toolbar button { margin-right: 4px; }
-    #editor[contenteditable="true"] {
-      border: 1px solid #ccc;
-      min-height: 300px;
-      padding: 1rem;
-      background: #fff;
-      margin-top: 0.5rem;
-    }
-    #sourceEditor { display: none; width: 100%; height: 300px; }
-    textarea { font-family: monospace; }
-    input[type="text"], select { width: 100%; margin-bottom: 0.5rem; padding: 4px; }
-    #searchResults { font-size: 0.9rem; color: gray; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Oxfordian Daily Lexicon</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 <body>
+  <header>
+    <div class="ribbon blue">Oxfordian Daily Lexicon</div>
+    <div class="ribbon yellow" id="section-label">Loading section...</div>
+  </header>
 
-  <div id="sidebar">
-    <h2>Wiki Pages</h2>
-    <input type="text" id="searchBox" placeholder="Search..." oninput="searchPages()" />
-    <div id="searchResults"></div>
-    <div id="pageList"></div>
-    <input type="text" id="newPageTitle" placeholder="New Page Title" />
-    <select id="templateSelector">
-      <option value="blank">Blank</option>
-      <option value="article">Article</option>
-      <option value="infobox">Infobox</option>
-      <option value="dictionary">Dictionary Entry</option>
-    </select>
-    <button onclick="createPage()">➕ Add Page</button>
-    <hr>
-    <h3>Modules</h3>
-    <button onclick="insertModule('currentDate')">📅 Current Date</button>
-  </div>
-
-  <div id="main">
-    <div id="controls">
-      <h2 id="currentPageTitle">[No Page Selected]</h2>
-      <div id="toolbar">
-        <button onclick="execCmd('bold')"><b>B</b></button>
-        <button onclick="execCmd('italic')"><i>I</i></button>
-        <button onclick="execCmd('underline')"><u>U</u></button>
-        <button onclick="execCmd('insertUnorderedList')">• List</button>
-        <button onclick="addLink()">🔗 Link</button>
-        <button onclick="translateSelection()">🌐 Translate</button>
-      </div>
-      <label><input type="radio" name="mode" value="visual" checked> Visual</label>
-      <label><input type="radio" name="mode" value="source"> Source</label>
-      <button onclick="saveCurrentPage()">💾 Save</button>
+  <main>
+    <div id="entry" class="entry">
+      <!-- Content loaded by script.js -->
     </div>
+  </main>
 
-    <div id="editor" contenteditable="true"></div>
-    <textarea id="sourceEditor"></textarea>
-  </div>
-
-  <script>
-    let pages = {};
-    let currentPage = null;
-
-    const templates = {
-      article: `<h2>New Article</h2><p>Start writing your article here...</p>`,
-      infobox: `<table border="1"><tr><th>Label</th><td>Value</td></tr></table>`,
-      dictionary: `<h2>Word</h2><p><b>Part of Speech:</b> Noun</p><p><b>Definition:</b> Definition goes here.</p>`,
-      blank: ``
-    };
-
-    function execCmd(cmd) {
-      document.execCommand(cmd, false, null);
-    }
-
-    function addLink() {
-      const url = prompt("Enter URL:");
-      if (url) document.execCommand("createLink", false, url);
-    }
-
-    function updateMode() {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      if (!currentPage) return;
-      if (mode === 'visual') {
-        document.getElementById('editor').innerHTML = document.getElementById('sourceEditor').value;
-        document.getElementById('editor').style.display = 'block';
-        document.getElementById('sourceEditor').style.display = 'none';
-      } else {
-        document.getElementById('sourceEditor').value = document.getElementById('editor').innerHTML;
-        document.getElementById('editor').style.display = 'none';
-        document.getElementById('sourceEditor').style.display = 'block';
-      }
-    }
-
-    document.querySelectorAll('input[name="mode"]').forEach(r => {
-      r.addEventListener('change', updateMode);
-    });
-
-    function createPage() {
-      const title = document.getElementById('newPageTitle').value.trim();
-      const template = document.getElementById('templateSelector').value;
-      if (!title || pages[title]) {
-        alert("Invalid or duplicate title.");
-        return;
-      }
-      pages[title] = templates[template] || '';
-      loadPage(title);
-      renderPageList();
-      document.getElementById('newPageTitle').value = '';
-    }
-
-    function renderPageList() {
-      const list = document.getElementById('pageList');
-      list.innerHTML = '';
-      Object.keys(pages).forEach(title => {
-        const link = document.createElement('div');
-        link.className = 'page-link';
-        link.textContent = title;
-        link.onclick = () => loadPage(title);
-        list.appendChild(link);
-      });
-    }
-
-    function loadPage(title) {
-      currentPage = title;
-      document.getElementById('currentPageTitle').textContent = title;
-      document.getElementById('editor').innerHTML = pages[title];
-      document.getElementById('sourceEditor').value = pages[title];
-      updateMode();
-    }
-
-    function saveCurrentPage() {
-      if (!currentPage) return;
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      const content = mode === 'visual' 
-        ? document.getElementById('editor').innerHTML 
-        : document.getElementById('sourceEditor').value;
-      pages[currentPage] = content;
-      alert("Page saved.");
-    }
-
-    function searchPages() {
-      const query = document.getElementById('searchBox').value.toLowerCase();
-      const results = [];
-      for (const title in pages) {
-        if (title.toLowerCase().includes(query) || pages[title].toLowerCase().includes(query)) {
-          results.push(title);
-        }
-      }
-      document.getElementById('searchResults').innerHTML = 
-        results.length ? `Results: ${results.join(', ')}` : '';
-    }
-
-    function translateSelection() {
-      const selection = window.getSelection().toString();
-      if (selection) {
-        alert(`Pretend this translates "${selection}" to another language.`);
-        // You can integrate with real translation APIs here
-      } else {
-        alert("Select some text to translate.");
-      }
-    }
-
-    function insertModule(name) {
-      if (name === 'currentDate') {
-        const now = new Date().toLocaleDateString();
-        document.execCommand('insertText', false, `📅 ${now}`);
-      }
-    }
-
-    // Initial rendering
-    renderPageList();
-  </script>
-
+  <footer class="note">Word of the Day is randomly drawn from a complete article each visit.</footer>
 </body>
 </html>
