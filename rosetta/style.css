@@ -1,0 +1,91 @@
+/* === Typography and Layout === */
+body {
+  font-family: "EB Garamond", Georgia, serif;
+  background: #fdfdf9;
+  color: #1a1a1a;
+  max-width: 700px;
+  margin: auto;
+  padding: 2rem;
+  line-height: 1.7;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* === Ribbons === */
+.ribbon {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-variant: small-caps;
+  border-radius: 4px;
+  margin: 0.3rem;
+  box-shadow: 2px 2px 4px #ccc;
+}
+
+.ribbon.blue {
+  background-color: #2c3e50;
+  color: white;
+}
+
+.ribbon.yellow {
+  background-color: #f1c40f;
+  color: #000;
+}
+
+/* === Entry Display === */
+.entry .word {
+  font-size: 2rem;
+  font-style: italic;
+  margin-bottom: 0.2rem;
+}
+
+.entry .pronunciation {
+  font-size: 1rem;
+  color: #555;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.entry .part-of-speech {
+  font-style: italic;
+  color: #666;
+  margin-top: 0.3rem;
+}
+
+.entry .section {
+  margin-top: 1.5rem;
+  padding-left: 1.2rem;
+  border-left: 4px solid #ddd;
+}
+
+.entry .definition p {
+  text-indent: -1.2rem;
+  padding-left: 1.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.entry .example {
+  font-style: italic;
+  color: #444;
+}
+
+.entry .etymology {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.entry .note {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* === Footer Note === */
+.note {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #888;
+}
