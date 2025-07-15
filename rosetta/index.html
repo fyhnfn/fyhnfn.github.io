@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Fandom Wiki Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    input, select, button {
+      padding: 0.5rem;
+      margin: 0.25rem 0;
+    }
+    #editor {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    #editor[contenteditable="true"] {
+      background: #f9f9f9;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      display: none;
+    }
+    #pagesList {
+      margin-top: 1rem;
+    }
+    .page-entry {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Wiki Page Editor</h1>
+
+  <label>Page Title: <input type="text" id="pageTitle" /></label><br>
+  <label>Template: 
+    <select id="template">
+      <option value="article">Article</option>
+      <option value="infobox">Infobox</option>
+    </select>
+  </label><br>
+
+  <label>
+    <input type="radio" name="mode" value="visual" checked> Visual
+  </label>
+  <label>
+    <input type="radio" name="mode" value="source"> Source
+  </label><br>
+
+  <div id="editor" contenteditable="true"></div>
+  <textarea id="sourceEditor"></textarea><br>
+
+  <button onclick="savePage()">Save Page</button>
+
+  <h2>Pages</h2>
+  <div id="pagesList"></div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const sourceEditor = document.getElementById('sourceEditor');
+    const pages = {};
+
+    function updateMode() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      if (mode === 'visual') {
+        editor.innerHTML = sourceEditor.value;
+        editor.style.display = 'block';
+        sourceEditor.style.display = 'none';
+      } else {
+        sourceEditor.value = editor.innerHTML;
+        editor.style.display = 'none';
+        sourceEditor.style.display = 'block';
+      }
+    }
+
+    document.querySelectorAll('input[name="mode"]').forEach(r => {
+      r.addEventListener('change', updateMode);
+    });
+
+    function savePage() {
+      const title = document.getElementById('pageTitle').value.trim();
+      const template = document.getElementById('template').value;
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const content = mode === 'visual' ? editor.innerHTML : sourceEditor.value;
+
+      if (!title) {
+        alert("Please enter a page title.");
+        return;
+      }
+
+      pages[title] = { template, content };
+      renderPageList();
+    }
+
+    function renderPageList() {
+      const container = document.getElementById('pagesList');
+      container.innerHTML = '';
+      for (const title in pages) {
+        const div = document.createElement('div');
+        div.className = 'page-entry';
+        div.textContent = title;
+        div.onclick = () => loadPage(title);
+        container.appendChild(div);
+      }
+    }
+
+    function loadPage(title) {
+      const page = pages[title];
+      document.getElementById('pageTitle').value = title;
+      document.getElementById('template').value = page.template;
+      editor.innerHTML = page.content;
+      sourceEditor.value = page.content;
+      updateMode();
+    }
+
+    // Template defaults (basic)
+    document.getElementById('template').addEventListener('change', () => {
+      const template = document.getElementById('template').value;
+      if (template === 'article') {
+        editor.innerHTML = `<h2>Heading</h2><p>Start your article here...</p>`;
+      } else if (template === 'infobox') {
+        editor.innerHTML = `<table border="1"><tr><th>Key</th><td>Value</td></tr></table>`;
+      }
+      sourceEditor.value = editor.innerHTML;
+      updateMode();
+    });
+
+    // Initialize visual mode
+    updateMode();
+  </script>
+
+</body>
+</html>
