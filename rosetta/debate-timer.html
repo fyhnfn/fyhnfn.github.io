@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Debate Timer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding-top: 80px;
+      transition: background-color 0.5s;
+    }
+    #timer {
+      font-size: 120px;
+      font-weight: bold;
+      color: #222;
+      margin-bottom: 40px;
+      transition: color 0.5s;
+    }
+    button {
+      font-size: 20px;
+      padding: 12px 20px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    input {
+      font-size: 18px;
+      padding: 8px;
+      margin-top: 10px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="timer">01:00</div>
+
+  <!-- Preset Time Buttons -->
+  <div>
+    <button onclick="setTime(15)">15s</button>
+    <button onclick="setTime(30)">30s</button>
+    <button onclick="setTime(45)">45s</button>
+    <button onclick="setTime(60)">1m</button>
+    <button onclick="setTime(75)">1m15s</button>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="addTime()">+10s (I)</button>
+    <button onclick="resetTimer()">Reset</button>
+  </div>
+
+  <!-- Custom Time Input -->
+  <div style="margin-top: 20px;">
+    <input id="customInput" placeholder="Enter time: 0h 1m 30s or ¾" />
+    <button onclick="parseCustomTime()">Set Custom</button>
+  </div>
+
+  <script>
+    let timeLeft = 60;
+    let timerInterval = null;
+    const timerDisplay = document.getElementById("timer");
+
+    function updateDisplay() {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerDisplay.textContent =
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function setTime(seconds) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.body.style.backgroundColor = '#f0f0f0';
+      timerDisplay.style.color = '#222';
+      timeLeft = seconds;
+      updateDisplay();
+    }
+
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          timeLeft = 0;
+          timerDisplay.textContent = "00:00";
+          document.body.style.backgroundColor = 'red';
+          timerDisplay.style.color = 'black';
+          alert("Time’s up!");
+        } else {
+          timeLeft--;
+          updateDisplay();
+        }
+      }, 1000);
+    }
+
+    function addTime() {
+      timeLeft += 10;
+      updateDisplay();
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      setTime(60);
+    }
+
+    // Handle 'I' key press
+    document.addEventListener('keydown', function(e) {
+      if (e.key.toLowerCase() === 'i') {
+        addTime();
+      }
+    });
+
+    // Parse custom time input
+    function parseCustomTime() {
+      const input = document.getElementById('customInput').value.trim();
+      let totalSeconds = 0;
+
+      // Convert vulgar fractions to decimals
+      const vulgarFractions = {
+        '½': 0.5, '⅓': 1/3, '⅔': 2/3, '¼': 0.25, '¾': 0.75,
+        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8,
+        '⅙': 1/6, '⅚': 5/6, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875
+      };
+
+      let replacedInput = input;
+      for (const frac in vulgarFractions) {
+        replacedInput = replacedInput.replace(new RegExp(frac, 'g'), vulgarFractions[frac]);
+      }
+
+      // Match hh mm ss or decimal seconds
+      const timePattern = /(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)?\s*(?:(\d+(?:\.\d+)?)\s*s?)?/i;
+      const match = replacedInput.match(timePattern);
+
+      if (match) {
+        const h = parseInt(match[1]) || 0;
+        const m = parseInt(match[2]) || 0;
+        const s = parseFloat(match[3]) || 0;
+        totalSeconds = Math.round(h * 3600 + m * 60 + s);
+        if (totalSeconds > 0) {
+          setTime(totalSeconds);
+        } else {
+          alert("Enter a valid time!");
+        }
+      } else {
+        alert("Invalid format. Try '1m 30s' or '¾'");
+      }
+    }
+
+    // Initialize display
+    updateDisplay();
+  </script>
+
+</body>
+</html>
