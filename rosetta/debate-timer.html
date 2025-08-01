@@ -93,7 +93,6 @@
           timerDisplay.textContent = "00:00";
           document.body.style.backgroundColor = 'red';
           timerDisplay.style.color = 'black';
-          alert("Time’s up!");
         } else {
           timeLeft--;
           updateDisplay();
@@ -128,7 +127,6 @@
       const input = document.getElementById('customInput').value.trim();
       let totalSeconds = 0;
 
-      // Convert vulgar fractions to decimals
       const vulgarFractions = {
         '½': 0.5, '⅓': 1/3, '⅔': 2/3, '¼': 0.25, '¾': 0.75,
         '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8,
@@ -140,7 +138,6 @@
         replacedInput = replacedInput.replace(new RegExp(frac, 'g'), vulgarFractions[frac]);
       }
 
-      // Match hh mm ss or decimal seconds
       const timePattern = /(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)?\s*(?:(\d+(?:\.\d+)?)\s*s?)?/i;
       const match = replacedInput.match(timePattern);
 
@@ -151,15 +148,10 @@
         totalSeconds = Math.round(h * 3600 + m * 60 + s);
         if (totalSeconds > 0) {
           setTime(totalSeconds);
-        } else {
-          alert("Enter a valid time!");
         }
-      } else {
-        alert("Invalid format. Try '1m 30s' or '¾'");
       }
     }
 
-    // Initialize
     updateDisplay();
   </script>
 
