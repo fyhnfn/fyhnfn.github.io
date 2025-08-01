@@ -112,10 +112,14 @@
       setTime(60);
     }
 
-    // Handle 'I' key press
+    // Handle keys: I adds time, Space starts timer
     document.addEventListener('keydown', function(e) {
       if (e.key.toLowerCase() === 'i') {
         addTime();
+      }
+      if (e.code === 'Space') {
+        e.preventDefault(); // Prevent scrolling
+        startTimer();
       }
     });
 
@@ -155,7 +159,7 @@
       }
     }
 
-    // Initialize display
+    // Initialize
     updateDisplay();
   </script>
 
