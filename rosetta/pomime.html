@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Web IME</title>
+<title>Web IME – Replace Latin Buffer</title>
 <style>
 body {
   font-family: "Segoe UI", sans-serif;
@@ -17,6 +17,8 @@ body {
   padding: 10px;
   font-size: 18px;
   border-radius: 8px;
+  outline: none;
+  white-space: pre-wrap;
 }
 #sidebar {
   width: 200px;
@@ -84,7 +86,7 @@ button.nav:hover {
 </div>
 
 <script>
-// Sample dictionary (expandable)
+// Sample dictionary
 const DICTIONARY = {
   chu: ["𡨸","出","初","處","儲","廚","觸","除","雛","黜"],
   nom: ["喃","男","南","楠","難"],
@@ -124,15 +126,30 @@ function showCandidates(list) {
     : `Buffer: "${buffer}" — no matches`;
 }
 
-// --- Commit chosen character into the editor ---
+// --- Replace the Latin buffer with the chosen character ---
 function commitCandidate(ch) {
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
   const range = sel.getRangeAt(0);
-  range.setStart(range.startContainer, range.startOffset - buffer.length);
-  range.deleteContents();
-  range.insertNode(document.createTextNode(ch));
-  range.collapse(false);
+  const node = range.startContainer;
+
+  // Replace last 'buffer' characters typed with chosen char
+  if (node.nodeType === Node.TEXT_NODE) {
+    const text = node.textContent;
+    const newText = text.slice(0, -buffer.length) + ch;
+    node.textContent = newText;
+    // Move cursor after inserted char
+    const newRange = document.createRange();
+    newRange.setStart(node, newText.length);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+  } else {
+    // fallback: insert at cursor
+    range.insertNode(document.createTextNode(ch));
+    range.collapse(false);
+  }
+
   buffer = '';
   candList.innerHTML = '';
   status.textContent = `Committed "${ch}".`;
