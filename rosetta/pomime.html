@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chūnom-Style IME Demo</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; }
+#editor {
+  width: 80%; min-height: 120px;
+  font-size: 18px;
+  padding: 8px;
+}
+#cand {
+  position: absolute;
+  border: 1px solid #aaa;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  padding: 4px;
+  display: none;
+  z-index: 1000;
+}
+#cand span {
+  margin: 0 4px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+#cand span:hover, #cand .active {
+  background: #0078ff;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<h2>Chūnom-Style Web IME Demo</h2>
+<p>Type romanized text like <b>chu</b> or <b>nom</b>.</p>
+
+<div id="editor" contenteditable="true"></div>
+<div id="cand"></div>
+
+<script>
+const DICT = {
+  chu: ["𡨸", "出", "初"],
+  nom: ["喃", "男", "南"],
+  chunom: ["𡨸喃"]
+};
+
+const editor = document.getElementById('editor');
+const candBox = document.getElementById('cand');
+let buffer = '';
+let activeIdx = 0;
+
+function getCaretRect() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return null;
+  const range = sel.getRangeAt(0).cloneRange();
+  range.collapse(true);
+  const rects = range.getClientRects();
+  return rects.length ? rects[0] : null;
+}
+
+function showCandidates(list) {
+  candBox.innerHTML = '';
+  list.forEach((c, i) => {
+    const span = document.createElement('span');
+    span.textContent = c;
+    if (i === activeIdx) span.classList.add('active');
+    span.onclick = () => commitCandidate(c);
+    candBox.appendChild(span);
+  });
+  const rect = getCaretRect();
+  if (rect) {
+    candBox.style.left = rect.left + 'px';
+    candBox.style.top = rect.bottom + 4 + 'px';
+  }
+  candBox.style.display = 'block';
+}
+
+function hideCandidates() {
+  candBox.style.display = 'none';
+}
+
+function updateCandidates() {
+  const list = DICT[buffer.toLowerCase()] || [];
+  if (list.length) {
+    activeIdx = 0;
+    showCandidates(list);
+  } else hideCandidates();
+}
+
+function commitCandidate(ch) {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  range.setStart(range.startContainer, range.startOffset - buffer.length);
+  range.deleteContents();
+  range.insertNode(document.createTextNode(ch));
+  range.collapse(false);
+  buffer = '';
+  hideCandidates();
+}
+
+editor.addEventListener('keydown', e => {
+  if (candBox.style.display !== 'none') {
+    const list = DICT[buffer] || [];
+    if (e.key === 'ArrowRight') {
+      e.preventDefault(); activeIdx = (activeIdx + 1) % list.length; showCandidates(list);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault(); activeIdx = (activeIdx - 1 + list.length) % list.length; showCandidates(list);
+    } else if (e.key === 'Enter') {
+      e.preventDefault(); commitCandidate(list[activeIdx]);
+    } else if (e.key === 'Escape') {
+      e.preventDefault(); buffer = ''; hideCandidates();
+    } else if (/^[1-9]$/.test(e.key)) {
+      const idx = +e.key - 1;
+      if (list[idx]) { e.preventDefault(); commitCandidate(list[idx]); }
+    }
+  }
+});
+
+editor.addEventListener('input', e => {
+  const text = editor.textContent;
+  const lastChar = text.slice(-1);
+  if (/^[a-zA-Z]$/.test(lastChar)) {
+    buffer += lastChar.toLowerCase();
+    updateCandidates();
+  } else if (/[\s,.!?]/.test(lastChar)) {
+    buffer = '';
+    hideCandidates();
+  }
+});
+</script>
+</body>
+</html>
