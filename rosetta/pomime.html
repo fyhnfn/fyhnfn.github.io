@@ -2,56 +2,69 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Web IME – British-Style Demo</title>
+<title>Web IME</title>
 <style>
-  body {
-    font-family: "Segoe UI", sans-serif;
-    margin: 2rem;
-    display: flex;
-    gap: 1rem;
-  }
-
-  #editor {
-    flex: 1;
-    min-height: 200px;
-    border: 1px solid #999;
-    padding: 10px;
-    font-size: 18px;
-  }
-
-  #sidebar {
-    width: 160px;
-    border: 1px solid #bbb;
-    background: #fafafa;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    padding: 6px;
-    font-size: 18px;
-  }
-
-  #sidebar h3 {
-    margin-top: 0;
-    font-size: 16px;
-    text-align: centre;
-  }
-
-  #candidates span {
-    display: block;
-    padding: 4px 6px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  #candidates span:hover, #candidates .active {
-    background: #0078d4;
-    colour: white;
-  }
-
-  #status {
-    font-size: 14px;
-    margin-top: .5rem;
-    colour: #666;
-  }
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 2rem;
+  display: flex;
+  gap: 1.5rem;
+}
+#editor {
+  flex: 1;
+  min-height: 220px;
+  border: 1px solid #888;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+}
+#sidebar {
+  width: 200px;
+  border: 1px solid #bbb;
+  background: #fafafa;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+#sidebar h3 {
+  margin-top: 0;
+  font-size: 16px;
+  text-align: centre;
+}
+#candidates span {
+  display: block;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#candidates span:hover, #candidates .active {
+  background: #0078d4;
+  colour: white;
+}
+#pager {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 14px;
+}
+#status {
+  font-size: 14px;
+  margin-top: 4px;
+  colour: #666;
+}
+button.nav {
+  background: #eee;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+button.nav:hover {
+  background: #ddd;
+}
 </style>
 </head>
 <body>
@@ -59,44 +72,59 @@
 <div id="editor" contenteditable="true" aria-label="Editable text area"></div>
 
 <div id="sidebar">
-  <h3>Candidates</h3>
-  <div id="candidates" role="listbox"></div>
+  <div>
+    <h3>Candidates</h3>
+    <div id="candidates" role="listbox"></div>
+    <div id="pager">
+      <button class="nav" id="prev">← Prev</button>
+      <button class="nav" id="next">Next →</button>
+    </div>
+  </div>
   <div id="status">Type Latin letters…</div>
 </div>
 
 <script>
-// Small sample dictionary (you can expand or fetch externally)
+// Sample dictionary (expandable)
 const DICTIONARY = {
-  chu: ["𡨸", "出", "初"],
-  nom: ["喃", "男", "南"],
-  chunom: ["𡨸喃"],
-  han: ["漢", "韓", "寒"],
-  tu: ["徒", "圖", "土"]
+  chu: ["𡨸","出","初","處","儲","廚","觸","除","雛","黜"],
+  nom: ["喃","男","南","楠","難"],
+  han: ["漢","韓","寒","汗","函","旱","翰","憨","涵"],
+  tu: ["徒","圖","土","吐","兔","屠","途","塗"],
+  chunom: ["𡨸喃"]
 };
 
 const editor = document.getElementById('editor');
 const candList = document.getElementById('candidates');
 const status = document.getElementById('status');
+const btnPrev = document.getElementById('prev');
+const btnNext = document.getElementById('next');
 
 let buffer = '';
 let activeIndex = 0;
+let page = 0;
+const perPage = 8;
 
-// Utility to show list of candidates in sidebar
+// --- Candidate display ---
 function showCandidates(list) {
   candList.innerHTML = '';
-  list.forEach((item, i) => {
+  const start = page * perPage;
+  const items = list.slice(start, start + perPage);
+  items.forEach((ch, i) => {
     const span = document.createElement('span');
-    span.textContent = `${i + 1}. ${item}`;
+    span.textContent = `${i+1}. ${ch}`;
     if (i === activeIndex) span.classList.add('active');
-    span.onclick = () => commitCandidate(item);
+    span.onclick = () => commitCandidate(ch);
     candList.appendChild(span);
   });
+  const totalPages = Math.ceil(list.length / perPage);
+  btnPrev.disabled = (page === 0);
+  btnNext.disabled = (page >= totalPages - 1);
   status.textContent = list.length
-    ? `Buffer: "${buffer}" (${list.length} match${list.length>1?'es':''})`
-    : `Buffer: "${buffer}" – no matches`;
+    ? `Buffer: "${buffer}" — Page ${page+1}/${totalPages}`
+    : `Buffer: "${buffer}" — no matches`;
 }
 
-// Commit chosen candidate into the text
+// --- Commit chosen character into the editor ---
 function commitCandidate(ch) {
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
@@ -107,10 +135,18 @@ function commitCandidate(ch) {
   range.collapse(false);
   buffer = '';
   candList.innerHTML = '';
-  status.textContent = 'Committed.';
+  status.textContent = `Committed "${ch}".`;
 }
 
-// Handle typing
+// --- Update displayed candidates ---
+function updateCandidates() {
+  const matches = DICTIONARY[buffer] || [];
+  activeIndex = 0;
+  page = 0;
+  showCandidates(matches);
+}
+
+// --- Event listeners ---
 editor.addEventListener('input', e => {
   const text = editor.textContent;
   const lastChar = text.slice(-1);
@@ -124,40 +160,41 @@ editor.addEventListener('input', e => {
   }
 });
 
-function updateCandidates() {
-  const matches = DICTIONARY[buffer] || [];
-  activeIndex = 0;
-  showCandidates(matches);
-}
-
-// Keyboard controls
 editor.addEventListener('keydown', e => {
   const list = DICTIONARY[buffer] || [];
   if (!list.length) return;
 
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    activeIndex = (activeIndex + 1) % list.length;
-    showCandidates(list);
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    activeIndex = (activeIndex - 1 + list.length) % list.length;
-    showCandidates(list);
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    commitCandidate(list[activeIndex]);
-  } else if (/^[1-9]$/.test(e.key)) {
+  if (/^[1-8]$/.test(e.key)) {
     const i = parseInt(e.key) - 1;
-    if (list[i]) {
+    const index = page * perPage + i;
+    if (list[index]) {
       e.preventDefault();
-      commitCandidate(list[i]);
+      commitCandidate(list[index]);
     }
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    const totalPages = Math.ceil(list.length / perPage);
+    if (page < totalPages - 1) { page++; showCandidates(list); }
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (page > 0) { page--; showCandidates(list); }
   } else if (e.key === 'Escape') {
     buffer = '';
     candList.innerHTML = '';
     status.textContent = 'Cancelled.';
   }
 });
+
+// --- Navigation buttons ---
+btnPrev.onclick = () => {
+  const list = DICTIONARY[buffer] || [];
+  if (page > 0) { page--; showCandidates(list); }
+};
+btnNext.onclick = () => {
+  const list = DICTIONARY[buffer] || [];
+  const totalPages = Math.ceil(list.length / perPage);
+  if (page < totalPages - 1) { page++; showCandidates(list); }
+};
 </script>
 
 </body>
