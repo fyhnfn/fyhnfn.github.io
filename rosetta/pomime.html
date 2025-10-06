@@ -1,218 +1,484 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
-<meta charset="utf-8">
-<title>Web IME – Replace Latin Buffer</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Conlang IME</title>
 <style>
-body {
-  font-family: "Segoe UI", sans-serif;
-  margin: 2rem;
-  display: flex;
-  gap: 1.5rem;
-}
-#editor {
-  flex: 1;
-  min-height: 220px;
-  border: 1px solid #888;
-  padding: 10px;
-  font-size: 18px;
-  border-radius: 8px;
-  outline: none;
-  white-space: pre-wrap;
-}
-#sidebar {
-  width: 200px;
-  border: 1px solid #bbb;
-  background: #fafafa;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  border-radius: 8px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-#sidebar h3 {
-  margin-top: 0;
-  font-size: 16px;
-  text-align: centre;
-}
-#candidates span {
-  display: block;
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-#candidates span:hover, #candidates .active {
-  background: #0078d4;
-  colour: white;
-}
-#pager {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-  font-size: 14px;
-}
-#status {
-  font-size: 14px;
-  margin-top: 4px;
-  colour: #666;
-}
-button.nav {
-  background: #eee;
-  border: 1px solid #aaa;
-  border-radius: 4px;
-  padding: 2px 6px;
-  cursor: pointer;
-}
-button.nav:hover {
-  background: #ddd;
-}
+  :root {
+    --sidebar-width: 220px;
+    --gap: 1.25rem;
+    --accent: #0078d4;
+  }
+  html,body { height: 100%; margin: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif; background: #f7f7f8; color: #111; }
+  .wrap {
+    display: flex;
+    gap: var(--gap);
+    padding: 1.5rem;
+    align-items: flex-start;
+  }
+
+  /* Editor */
+  #editor {
+    flex: 1;
+    min-height: 320px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 18px;
+    line-height: 1.45;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    outline: none;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+  #editor:focus { box-shadow: 0 0 0 3px rgba(0,120,212,0.08); border-color: var(--accent); }
+
+  /* Sidebar */
+  #sidebar {
+    width: var(--sidebar-width);
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  #sidebar h3 { margin: 4px 0 10px 0; font-size: 15px; text-align: centre; } /* British spelling 'centre' used in comments/UI text */
+  #cand-wrap { min-height: 180px; }
+  #candidates { display: flex; flex-direction: column; gap: 6px; }
+  .cand-item {
+    user-select: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .cand-item .num { min-width: 20px; color: #555; font-size: 14px; }
+  .cand-item .glyph { font-family: "Segoe UI Symbol", serif; font-size: 20px; }
+  .cand-item:hover, .cand-item.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* pager & status */
+  #pager { display:flex; justify-content: space-between; gap: 6px; margin-top: 8px; align-items: center; }
+  button.nav { padding: 6px 8px; border-radius: 6px; border: 1px solid #cfcfcf; background: #fafafa; cursor:pointer; }
+  button.nav:disabled { opacity: .45; cursor: not-allowed; }
+  #status { margin-top: 10px; font-size: 13px; color: #555; }
+
+  /* small helper text */
+  .hint { font-size: 12px; color: #666; margin-top: 6px; }
+  @media (max-width: 880px) {
+    .wrap { flex-direction: column; }
+    #sidebar { width: 100%; }
+  }
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div id="editor" contenteditable="true" aria-label="Editable text area for Conlang IME" spellcheck="false"></div>
 
-<div id="editor" contenteditable="true" aria-label="Editable text area"></div>
-
-<div id="sidebar">
-  <div>
-    <h3>Candidates</h3>
-    <div id="candidates" role="listbox"></div>
-    <div id="pager">
-      <button class="nav" id="prev">← Prev</button>
-      <button class="nav" id="next">Next →</button>
+  <aside id="sidebar" aria-label="Candidate sidebar">
+    <div id="cand-wrap">
+      <h3>Candidates</h3>
+      <div id="candidates" role="listbox" aria-live="polite" aria-atomic="true"></div>
+      <div id="pager">
+        <button class="nav" id="prev" title="Previous page (←)">← Prev</button>
+        <button class="nav" id="next" title="Next page (→)">Next →</button>
+      </div>
     </div>
-  </div>
-  <div id="status">Type Latin letters…</div>
+
+    <div>
+      <div id="status">Type Latin letters to compose (numbers 1–8 select a candidate).</div>
+      <div class="hint">Use <strong>ArrowUp/ArrowDown</strong> to move selection; <strong>ArrowLeft/ArrowRight</strong> to page; <strong>Esc</strong> cancels.</div>
+    </div>
+  </aside>
 </div>
 
-<script>
-// Sample dictionary
-const DICTIONARY = {
-  chu: ["𡨸","出","初","處","儲","廚","觸","除","雛","黜"],
-  nom: ["喃","男","南","楠","難"],
-  han: ["漢","韓","寒","汗","函","旱","翰","憨","涵"],
-  tu: ["徒","圖","土","吐","兔","屠","途","塗"],
-  chunom: ["𡨸喃"]
-};
+<!-- Built-in dictionary (replace or load externally as required) -->
+<script id="dict-data" type="application/json">
+{
+  "pa": ["⟨pa1⟩","⟨pa2⟩"],
+  "lo": ["⟨lo⟩"],
+  "meri": ["⟨meri⟩"],
+  "tu": ["⟨tu1⟩","⟨tu2⟩","⟨tu3⟩","⟨tu4⟩","⟨tu5⟩","⟨tu6⟩","⟨tu7⟩","⟨tu8⟩","⟨tu9⟩","⟨tu10⟩"],
+  "pom": ["⟨pom⟩","⟨pomi⟩","⟨poma⟩"],
+  "pomeroi": ["⟨pomeroi-compound⟩"]
+}
+</script>
 
+<script>
+/* =============================
+   Conlang IME — single-file
+   - Sidebar candidate UI
+   - 1..8 number selection per page
+   - Arrow-based paging / in-page selection
+   - Replaces Latin buffer with chosen glyph
+   - British spelling and UI copy
+   ============================= */
+
+/* Config */
+const PER_PAGE = 8;           // show 1..8 choices per page
+const MAX_NUM_KEY = 8;        // numbers 1..8
+const DICT_JSON = document.getElementById('dict-data').textContent.trim();
+const DICTIONARY = JSON.parse(DICT_JSON);
+
+/* DOM */
 const editor = document.getElementById('editor');
-const candList = document.getElementById('candidates');
+const candBox = document.getElementById('candidates');
 const status = document.getElementById('status');
 const btnPrev = document.getElementById('prev');
 const btnNext = document.getElementById('next');
 
-let buffer = '';
-let activeIndex = 0;
-let page = 0;
-const perPage = 8;
+/* IME state */
+let buffer = '';              // current composition buffer (Latin)
+let page = 0;                 // current page index (0-based)
+let activeIndex = 0;          // index in current page (0..PER_PAGE-1)
+let currentMatches = [];      // full list of matches (flattened)
+let imeEnabled = true;        // currently enabled (toggleable later)
 
-// --- Candidate display ---
-function showCandidates(list) {
-  candList.innerHTML = '';
-  const start = page * perPage;
-  const items = list.slice(start, start + perPage);
-  items.forEach((ch, i) => {
-    const span = document.createElement('span');
-    span.textContent = `${i+1}. ${ch}`;
-    if (i === activeIndex) span.classList.add('active');
-    span.onclick = () => commitCandidate(ch);
-    candList.appendChild(span);
-  });
-  const totalPages = Math.ceil(list.length / perPage);
-  btnPrev.disabled = (page === 0);
-  btnNext.disabled = (page >= totalPages - 1);
-  status.textContent = list.length
-    ? `Buffer: "${buffer}" — Page ${page+1}/${totalPages}`
-    : `Buffer: "${buffer}" — no matches`;
+/* Utility: flatten dictionary results for a buffer (exact match first),
+   but also include prefix matches (so typing 'po' will show keys starting with 'po').
+   For strict exact-match behaviour, remove the prefix logic. */
+function findMatches(buf) {
+  if (!buf) return [];
+  buf = buf.toLowerCase();
+  const exact = DICTIONARY[buf] || [];
+  // include prefix-based candidates (but keep exact matches first)
+  const prefixMatches = [];
+  for (const k in DICTIONARY) {
+    if (k.startsWith(buf) && k !== buf) {
+      prefixMatches.push(...DICTIONARY[k]);
+    }
+  }
+  // If there are many duplicates, you could uniq them here.
+  return [...exact, ...prefixMatches];
 }
 
-// --- Replace the Latin buffer with the chosen character ---
-function commitCandidate(ch) {
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  const node = range.startContainer;
+/* Render the visible page of candidates */
+function renderCandidates() {
+  candBox.innerHTML = '';
+  if (!currentMatches.length) {
+    status.textContent = buffer ? `Buffer: "${buffer}" — no matches` : 'Type Latin letters to compose.';
+    btnPrev.disabled = true;
+    btnNext.disabled = true;
+    return;
+  }
 
-  // Replace last 'buffer' characters typed with chosen char
-  if (node.nodeType === Node.TEXT_NODE) {
-    const text = node.textContent;
-    const newText = text.slice(0, -buffer.length) + ch;
-    node.textContent = newText;
-    // Move cursor after inserted char
+  const totalPages = Math.ceil(currentMatches.length / PER_PAGE) || 1;
+  if (page >= totalPages) page = totalPages - 1;
+  if (page < 0) page = 0;
+
+  const start = page * PER_PAGE;
+  const slice = currentMatches.slice(start, start + PER_PAGE);
+
+  slice.forEach((glyph, i) => {
+    const span = document.createElement('div');
+    span.className = 'cand-item';
+    if (i === activeIndex) span.classList.add('active');
+
+    // left: number label. right: glyph.
+    const num = document.createElement('span');
+    num.className = 'num';
+    num.textContent = `${i+1}.`;
+
+    const glyphSpan = document.createElement('span');
+    glyphSpan.className = 'glyph';
+    glyphSpan.textContent = glyph;
+
+    span.appendChild(num);
+    span.appendChild(glyphSpan);
+
+    // click selects this glyph
+    span.addEventListener('click', () => {
+      commitCandidate(start + i);
+    });
+
+    candBox.appendChild(span);
+  });
+
+  // update pager state & status text
+  btnPrev.disabled = (page === 0);
+  btnNext.disabled = (page >= totalPages - 1);
+  status.textContent = `Buffer: "${buffer}" — Page ${page+1}/${totalPages}`;
+}
+
+/* Replace last buffer.length characters with chosen glyph.
+   We attempt to replace within the current text node where the caret sits.
+   If that is not possible, we fall back to inserting at the caret position. */
+function commitCandidate(globalIndex) {
+  if (!currentMatches.length) return;
+  const glyph = currentMatches[globalIndex];
+  if (!glyph) return;
+
+  const sel = window.getSelection();
+  if (!sel.rangeCount) {
+    // fallback: append
+    editor.appendChild(document.createTextNode(glyph));
+    placeCaretAtEnd(editor);
+    buffer = '';
+    currentMatches = [];
+    renderCandidates();
+    return;
+  }
+
+  const range = sel.getRangeAt(0).cloneRange();
+  const container = range.startContainer;
+  const offset = range.startOffset;
+
+  // If we are in a TEXT_NODE, try to replace the last buffer.length characters in that node.
+  if (container.nodeType === Node.TEXT_NODE) {
+    const txt = container.textContent;
+    const removeCount = Math.min(buffer.length, offset);
+    const before = txt.slice(0, offset - removeCount);
+    const after = txt.slice(offset);
+    const newTxt = before + glyph + after;
+    container.textContent = newTxt;
+
+    // set caret after inserted glyph
+    const newOffset = (before + glyph).length;
     const newRange = document.createRange();
-    newRange.setStart(node, newText.length);
+    newRange.setStart(container, newOffset);
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);
+
   } else {
-    // fallback: insert at cursor
-    range.insertNode(document.createTextNode(ch));
-    range.collapse(false);
-  }
-
-  buffer = '';
-  candList.innerHTML = '';
-  status.textContent = `Committed "${ch}".`;
-}
-
-// --- Update displayed candidates ---
-function updateCandidates() {
-  const matches = DICTIONARY[buffer] || [];
-  activeIndex = 0;
-  page = 0;
-  showCandidates(matches);
-}
-
-// --- Event listeners ---
-editor.addEventListener('input', e => {
-  const text = editor.textContent;
-  const lastChar = text.slice(-1);
-  if (/^[a-zA-Z]$/.test(lastChar)) {
-    buffer += lastChar.toLowerCase();
-    updateCandidates();
-  } else if (/[\s,.!?;:]/.test(lastChar)) {
-    buffer = '';
-    candList.innerHTML = '';
-    status.textContent = 'Buffer cleared.';
-  }
-});
-
-editor.addEventListener('keydown', e => {
-  const list = DICTIONARY[buffer] || [];
-  if (!list.length) return;
-
-  if (/^[1-8]$/.test(e.key)) {
-    const i = parseInt(e.key) - 1;
-    const index = page * perPage + i;
-    if (list[index]) {
-      e.preventDefault();
-      commitCandidate(list[index]);
+    // If the container is an element node (e.g. caret was in between elements),
+    // attempt to find a text node immediately before the caret to remove from.
+    // If none, insert glyph node at caret.
+    let textNode = null;
+    // prefer previousSibling if it's a text node
+    if (range.startContainer.childNodes && range.startOffset > 0) {
+      const nodeBefore = range.startContainer.childNodes[range.startOffset - 1];
+      if (nodeBefore && nodeBefore.nodeType === Node.TEXT_NODE) textNode = nodeBefore;
     }
-  } else if (e.key === 'ArrowRight') {
-    e.preventDefault();
-    const totalPages = Math.ceil(list.length / perPage);
-    if (page < totalPages - 1) { page++; showCandidates(list); }
-  } else if (e.key === 'ArrowLeft') {
-    e.preventDefault();
-    if (page > 0) { page--; showCandidates(list); }
-  } else if (e.key === 'Escape') {
+    if (textNode) {
+      const txt = textNode.textContent;
+      const removeCount = Math.min(buffer.length, txt.length);
+      const before = txt.slice(0, txt.length - removeCount);
+      const after = '';
+      textNode.textContent = before + glyph + after;
+      // place caret after inserted glyph
+      const newRange = document.createRange();
+      newRange.setStart(textNode, (before + glyph).length);
+      newRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+    } else {
+      // fallback insert a text node with glyph at caret range
+      const node = document.createTextNode(glyph);
+      range.insertNode(node);
+      // move caret after node
+      range.setStartAfter(node);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+
+  // clear buffer and update candidates
+  buffer = '';
+  currentMatches = [];
+  page = 0;
+  activeIndex = 0;
+  renderCandidates();
+  editor.focus();
+}
+
+/* Place caret at the end of an element (fallback) */
+function placeCaretAtEnd(el) {
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+/* Update matches & UI when buffer changes */
+function updateFromBuffer() {
+  if (!buffer) {
+    currentMatches = [];
+    page = 0;
+    activeIndex = 0;
+    renderCandidates();
+    return;
+  }
+  currentMatches = findMatches(buffer);
+  page = 0;
+  activeIndex = 0;
+  renderCandidates();
+}
+
+/* Input handling:
+   - When the user types ASCII letters, extend the buffer.
+   - When punctuation/space/newline typed, clear the buffer.
+   - We avoid interfering with native composition events (for real IMEs).
+*/
+editor.addEventListener('input', (ev) => {
+  if (!imeEnabled) return;
+  // We infer last typed character by looking at current caret text node & offset.
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const container = range.startContainer;
+  const offset = range.startOffset;
+
+  let lastChar = '';
+  if (container.nodeType === Node.TEXT_NODE) {
+    lastChar = container.textContent.charAt(offset - 1) || '';
+  } else {
+    // If the container is an element, try previous sibling text node
+    if (offset > 0) {
+      const nodeBefore = container.childNodes[offset - 1];
+      if (nodeBefore && nodeBefore.nodeType === Node.TEXT_NODE) {
+        lastChar = nodeBefore.textContent.slice(-1);
+      }
+    }
+  }
+
+  if (/^[A-Za-z]$/.test(lastChar)) {
+    buffer += lastChar.toLowerCase();
+    updateFromBuffer();
+  } else if (/[\s\.\,\?\!\;\:\u00A0]/.test(lastChar) || lastChar === '') {
+    // space, punctuation or empty means commit/clear the buffer
     buffer = '';
-    candList.innerHTML = '';
-    status.textContent = 'Cancelled.';
+    currentMatches = [];
+    renderCandidates();
+  } else {
+    // any other character (e.g. symbol) – clear buffer
+    buffer = '';
+    currentMatches = [];
+    renderCandidates();
   }
 });
 
-// --- Navigation buttons ---
-btnPrev.onclick = () => {
-  const list = DICTIONARY[buffer] || [];
-  if (page > 0) { page--; showCandidates(list); }
-};
-btnNext.onclick = () => {
-  const list = DICTIONARY[buffer] || [];
-  const totalPages = Math.ceil(list.length / perPage);
-  if (page < totalPages - 1) { page++; showCandidates(list); }
-};
-</script>
+/* Keydown handling for navigation and selection */
+editor.addEventListener('keydown', (ev) => {
+  if (!imeEnabled) return;
+  const listLen = currentMatches.length;
+  if (!listLen) return;
 
+  // Number keys 1..MAX_NUM_KEY map to visible slots on the page
+  if (/^[1-9]$/.test(ev.key)) {
+    const num = parseInt(ev.key, 10);
+    if (num >= 1 && num <= MAX_NUM_KEY) {
+      const idxOnPage = num - 1;
+      const globalIndex = page * PER_PAGE + idxOnPage;
+      if (currentMatches[globalIndex]) {
+        ev.preventDefault();
+        commitCandidate(globalIndex);
+      }
+    }
+    return;
+  }
+
+  switch (ev.key) {
+    case 'ArrowDown':
+      ev.preventDefault();
+      // move activeIndex down within page
+      {
+        const itemsOnPage = Math.min(PER_PAGE, listLen - page * PER_PAGE);
+        activeIndex = (activeIndex + 1) % itemsOnPage;
+        renderCandidates();
+      }
+      break;
+
+    case 'ArrowUp':
+      ev.preventDefault();
+      {
+        const itemsOnPage = Math.min(PER_PAGE, listLen - page * PER_PAGE);
+        activeIndex = (activeIndex - 1 + itemsOnPage) % itemsOnPage;
+        renderCandidates();
+      }
+      break;
+
+    case 'ArrowRight':
+      ev.preventDefault();
+      {
+        const totalPages = Math.ceil(listLen / PER_PAGE);
+        if (page < totalPages - 1) {
+          page++;
+          activeIndex = 0;
+          renderCandidates();
+        }
+      }
+      break;
+
+    case 'ArrowLeft':
+      ev.preventDefault();
+      if (page > 0) { page--; activeIndex = 0; renderCandidates(); }
+      break;
+
+    case 'Enter':
+      // commit the active candidate on Enter
+      ev.preventDefault();
+      {
+        const globalIndex = page * PER_PAGE + activeIndex;
+        if (currentMatches[globalIndex]) commitCandidate(globalIndex);
+      }
+      break;
+
+    case 'Escape':
+      ev.preventDefault();
+      // cancel IME buffer
+      buffer = '';
+      currentMatches = [];
+      page = 0;
+      activeIndex = 0;
+      renderCandidates();
+      break;
+
+    default:
+      // allow other keys to propagate (they will be handled in 'input' event)
+      break;
+  }
+});
+
+/* Pager buttons */
+btnPrev.addEventListener('click', () => {
+  const totalPages = Math.ceil(currentMatches.length / PER_PAGE);
+  if (page > 0) { page--; activeIndex = 0; renderCandidates(); }
+});
+btnNext.addEventListener('click', () => {
+  const totalPages = Math.ceil(currentMatches.length / PER_PAGE);
+  if (page < totalPages - 1) { page++; activeIndex = 0; renderCandidates(); }
+});
+
+/* Initialise: place caret in editor */
+placeCaretAtEnd(editor);
+renderCandidates();
+
+/* OPTIONAL: API helpers to replace dictionary at runtime (for conlang editing) */
+window.ConlangIME = {
+  setDictionary: (obj) => {
+    // replace dictionary and refresh UI
+    for (const k in obj) DICTIONARY[k] = obj[k];
+    // if buffer exists, update matches
+    if (buffer) updateFromBuffer();
+  },
+  loadDictionaryFromJSON: (jsonStr) => {
+    try {
+      const obj = JSON.parse(jsonStr);
+      window.ConlangIME.setDictionary(obj);
+    } catch (err) { console.error('Invalid JSON for dictionary', err); }
+  },
+  toggleIME: (onOrOff) => {
+    imeEnabled = !!onOrOff;
+    if (!imeEnabled) { buffer = ''; currentMatches = []; renderCandidates(); }
+  }
+};
+
+</script>
 </body>
 </html>
