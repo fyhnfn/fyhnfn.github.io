@@ -2,93 +2,101 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Chūnom-Style IME Demo</title>
+<title>Web IME – British-Style Demo</title>
 <style>
-body { font-family: sans-serif; margin: 2rem; }
-#editor {
-  width: 80%; min-height: 120px;
-  font-size: 18px;
-  padding: 8px;
-}
-#cand {
-  position: absolute;
-  border: 1px solid #aaa;
-  background: #fff;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-  padding: 4px;
-  display: none;
-  z-index: 1000;
-}
-#cand span {
-  margin: 0 4px;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-#cand span:hover, #cand .active {
-  background: #0078ff;
-  color: white;
-}
+  body {
+    font-family: "Segoe UI", sans-serif;
+    margin: 2rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  #editor {
+    flex: 1;
+    min-height: 200px;
+    border: 1px solid #999;
+    padding: 10px;
+    font-size: 18px;
+  }
+
+  #sidebar {
+    width: 160px;
+    border: 1px solid #bbb;
+    background: #fafafa;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 6px;
+    font-size: 18px;
+  }
+
+  #sidebar h3 {
+    margin-top: 0;
+    font-size: 16px;
+    text-align: centre;
+  }
+
+  #candidates span {
+    display: block;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  #candidates span:hover, #candidates .active {
+    background: #0078d4;
+    colour: white;
+  }
+
+  #status {
+    font-size: 14px;
+    margin-top: .5rem;
+    colour: #666;
+  }
 </style>
 </head>
 <body>
 
-<h2>Chūnom-Style Web IME Demo</h2>
-<p>Type romanized text like <b>chu</b> or <b>nom</b>.</p>
+<div id="editor" contenteditable="true" aria-label="Editable text area"></div>
 
-<div id="editor" contenteditable="true"></div>
-<div id="cand"></div>
+<div id="sidebar">
+  <h3>Candidates</h3>
+  <div id="candidates" role="listbox"></div>
+  <div id="status">Type Latin letters…</div>
+</div>
 
 <script>
-const DICT = {
+// Small sample dictionary (you can expand or fetch externally)
+const DICTIONARY = {
   chu: ["𡨸", "出", "初"],
   nom: ["喃", "男", "南"],
-  chunom: ["𡨸喃"]
+  chunom: ["𡨸喃"],
+  han: ["漢", "韓", "寒"],
+  tu: ["徒", "圖", "土"]
 };
 
 const editor = document.getElementById('editor');
-const candBox = document.getElementById('cand');
+const candList = document.getElementById('candidates');
+const status = document.getElementById('status');
+
 let buffer = '';
-let activeIdx = 0;
+let activeIndex = 0;
 
-function getCaretRect() {
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return null;
-  const range = sel.getRangeAt(0).cloneRange();
-  range.collapse(true);
-  const rects = range.getClientRects();
-  return rects.length ? rects[0] : null;
-}
-
+// Utility to show list of candidates in sidebar
 function showCandidates(list) {
-  candBox.innerHTML = '';
-  list.forEach((c, i) => {
+  candList.innerHTML = '';
+  list.forEach((item, i) => {
     const span = document.createElement('span');
-    span.textContent = c;
-    if (i === activeIdx) span.classList.add('active');
-    span.onclick = () => commitCandidate(c);
-    candBox.appendChild(span);
+    span.textContent = `${i + 1}. ${item}`;
+    if (i === activeIndex) span.classList.add('active');
+    span.onclick = () => commitCandidate(item);
+    candList.appendChild(span);
   });
-  const rect = getCaretRect();
-  if (rect) {
-    candBox.style.left = rect.left + 'px';
-    candBox.style.top = rect.bottom + 4 + 'px';
-  }
-  candBox.style.display = 'block';
+  status.textContent = list.length
+    ? `Buffer: "${buffer}" (${list.length} match${list.length>1?'es':''})`
+    : `Buffer: "${buffer}" – no matches`;
 }
 
-function hideCandidates() {
-  candBox.style.display = 'none';
-}
-
-function updateCandidates() {
-  const list = DICT[buffer.toLowerCase()] || [];
-  if (list.length) {
-    activeIdx = 0;
-    showCandidates(list);
-  } else hideCandidates();
-}
-
+// Commit chosen candidate into the text
 function commitCandidate(ch) {
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
@@ -98,38 +106,59 @@ function commitCandidate(ch) {
   range.insertNode(document.createTextNode(ch));
   range.collapse(false);
   buffer = '';
-  hideCandidates();
+  candList.innerHTML = '';
+  status.textContent = 'Committed.';
 }
 
-editor.addEventListener('keydown', e => {
-  if (candBox.style.display !== 'none') {
-    const list = DICT[buffer] || [];
-    if (e.key === 'ArrowRight') {
-      e.preventDefault(); activeIdx = (activeIdx + 1) % list.length; showCandidates(list);
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault(); activeIdx = (activeIdx - 1 + list.length) % list.length; showCandidates(list);
-    } else if (e.key === 'Enter') {
-      e.preventDefault(); commitCandidate(list[activeIdx]);
-    } else if (e.key === 'Escape') {
-      e.preventDefault(); buffer = ''; hideCandidates();
-    } else if (/^[1-9]$/.test(e.key)) {
-      const idx = +e.key - 1;
-      if (list[idx]) { e.preventDefault(); commitCandidate(list[idx]); }
-    }
-  }
-});
-
+// Handle typing
 editor.addEventListener('input', e => {
   const text = editor.textContent;
   const lastChar = text.slice(-1);
   if (/^[a-zA-Z]$/.test(lastChar)) {
     buffer += lastChar.toLowerCase();
     updateCandidates();
-  } else if (/[\s,.!?]/.test(lastChar)) {
+  } else if (/[\s,.!?;:]/.test(lastChar)) {
     buffer = '';
-    hideCandidates();
+    candList.innerHTML = '';
+    status.textContent = 'Buffer cleared.';
+  }
+});
+
+function updateCandidates() {
+  const matches = DICTIONARY[buffer] || [];
+  activeIndex = 0;
+  showCandidates(matches);
+}
+
+// Keyboard controls
+editor.addEventListener('keydown', e => {
+  const list = DICTIONARY[buffer] || [];
+  if (!list.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeIndex = (activeIndex + 1) % list.length;
+    showCandidates(list);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeIndex = (activeIndex - 1 + list.length) % list.length;
+    showCandidates(list);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    commitCandidate(list[activeIndex]);
+  } else if (/^[1-9]$/.test(e.key)) {
+    const i = parseInt(e.key) - 1;
+    if (list[i]) {
+      e.preventDefault();
+      commitCandidate(list[i]);
+    }
+  } else if (e.key === 'Escape') {
+    buffer = '';
+    candList.innerHTML = '';
+    status.textContent = 'Cancelled.';
   }
 });
 </script>
+
 </body>
 </html>
